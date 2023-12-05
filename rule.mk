@@ -216,8 +216,8 @@ $(LIBDIR)/$(MODE)/%.o : $(SRCDIR)/%.cpp
 	@if [ ! -d $(LIBDIR)/$(MODE) ]; then \
 		mkdir -p $(LIBDIR)/$(MODE); \
 	fi
-	@echo "    CXX   $(notdir $<)"
-	@$(CXX) $(CFLAGS) $(PKGFLAGS) $(INCLOC) -c -o $@ $<
+	echo "    CXX   $(notdir $<)"
+	$(CXX) $(CFLAGS) $(PKGFLAGS) $(INCLOC) -c -o $@ $<
 
 $(LIBDIR)/$(MODE)/%.o : $(SRCDIR)/%.c
 	@if [ ! -d $(LIBDIR)/$(MODE) ]; then \

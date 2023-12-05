@@ -39,73 +39,62 @@ using namespace CoreNs;
 // 						]
 // Date       [ Ver. 1.0 started 2013/08/13	last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtractor, bool isMFO)
-{
-	Fault *pCurrentFault = NULL;
-	FaultPtrList originalFaultPtrList, faultPtrListForSTC;
-	setupCircuitParameter();
-	pPatternProcessor->init(pCircuit_);
+void Atpg::generatePatternSet(PatternProcessor* pPatternProcessor, FaultListExtract* pFaultListExtractor, bool isMFO) {
+    Fault* pCurrentFault = NULL;
+    FaultPtrList originalFaultPtrList, faultPtrListForSTC;
+    setupCircuitParameter();
+    pPatternProcessor->init(pCircuit_);
 
-	// setting faults for running ATPG
-	for (Fault *pFault : pFaultListExtractor->faultsInCircuit_)
-	{
-		const bool faultIsQualified = (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0);
-		if (faultIsQualified)
-		{
-			originalFaultPtrList.push_back(pFault);
-			faultPtrListForSTC.push_back(pFault);
-		}
-	}
+    // setting faults for running ATPG
+    for (Fault* pFault : pFaultListExtractor->faultsInCircuit_) {
+        const bool faultIsQualified = (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0);
+        if (faultIsQualified) {
+            originalFaultPtrList.push_back(pFault);
+            faultPtrListForSTC.push_back(pFault);
+        }
+    }
 
-	// testClearFaultEffect(originalFaultPtrList); // only used for debug
+    // testClearFaultEffect(originalFaultPtrList); // only used for debug
 
-	const double faultPtrListSize = (double)(originalFaultPtrList.size());
-	int numOfAtpgUntestableFaults = 0;
-	// record pattern set when lower undetected fault/ lower test length with same undetected fault
-	numOfAtpgUntestableFaults = 0;
+    const double faultPtrListSize = (double)(originalFaultPtrList.size());
+    int numOfAtpgUntestableFaults = 0;
+    // record pattern set when lower undetected fault/ lower test length with same undetected fault
+    numOfAtpgUntestableFaults = 0;
 
-	pPatternProcessor->patternVector_.clear();
-	pPatternProcessor->patternVector_.reserve(MAX_LIST_SIZE);
+    pPatternProcessor->patternVector_.clear();
+    pPatternProcessor->patternVector_.reserve(MAX_LIST_SIZE);
 
-	// start ATPG
-	while (!originalFaultPtrList.empty())
-	{
-		// meaning the originalFaultPtrList is already left with aborted fault
-		if (originalFaultPtrList.front()->faultState_ == Fault::AB)
-		{
-			break;
-		}
+    // start ATPG
+    while (!originalFaultPtrList.empty()) {
+        // meaning the originalFaultPtrList is already left with aborted fault
+        if (originalFaultPtrList.front()->faultState_ == Fault::AB) {
+            break;
+        }
 
-		// the fault is not popped in previous call of StuckAtFaultATPG()
-		// => the fault is neither aborted nor untestable => a pattern was found => detected fault
-		if (pCurrentFault == originalFaultPtrList.front())
-		{
-			originalFaultPtrList.front()->faultState_ = Fault::DT;
-			originalFaultPtrList.pop_front();
-			continue;
-		}
+        // the fault is not popped in previous call of StuckAtFaultATPG()
+        // => the fault is neither aborted nor untestable => a pattern was found => detected fault
+        if (pCurrentFault == originalFaultPtrList.front()) {
+            originalFaultPtrList.front()->faultState_ = Fault::DT;
+            originalFaultPtrList.pop_front();
+            continue;
+        }
 
-		pCurrentFault = originalFaultPtrList.front();
-		const bool isTransitionDelayFault = (pCurrentFault->faultType_ == Fault::STR || pCurrentFault->faultType_ == Fault::STF);
-		if (isTransitionDelayFault)
-		{
-			TransitionDelayFaultATPG(originalFaultPtrList, pPatternProcessor, numOfAtpgUntestableFaults);
-		}
-		else
-		{
-			StuckAtFaultATPG(originalFaultPtrList, pPatternProcessor, numOfAtpgUntestableFaults);
-		}
-	}
-	if (pPatternProcessor->staticCompression_ == PatternProcessor::ON)
-	{
-		staticTestCompressionByReverseFaultSimulation(pPatternProcessor, faultPtrListForSTC);
-	}
+        pCurrentFault = originalFaultPtrList.front();
+        const bool isTransitionDelayFault = (pCurrentFault->faultType_ == Fault::STR || pCurrentFault->faultType_ == Fault::STF);
+        if (isTransitionDelayFault) {
+            TransitionDelayFaultATPG(originalFaultPtrList, pPatternProcessor, numOfAtpgUntestableFaults);
+        } else {
+            StuckAtFaultATPG(originalFaultPtrList, pPatternProcessor, numOfAtpgUntestableFaults);
+        }
+    }
+    if (pPatternProcessor->staticCompression_ == PatternProcessor::ON) {
+        staticTestCompressionByReverseFaultSimulation(pPatternProcessor, faultPtrListForSTC);
+    }
 
-	// finsh calculation equivalent faults left
-	for (Fault *pFault : faultPtrListForSTC)
-	{
-		numOfAtpgUntestableFaults += pFault->equivalent_;
-	}
+    // finsh calculation equivalent faults left
+    for (Fault* pFault : faultPtrListForSTC) {
+        numOfAtpgUntestableFaults += pFault->equivalent_;
+    }
 }
 
 // **************************************************************************
@@ -119,19 +108,18 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 // 						]
 // Date       [ KOREAL Ver. 1.0 started 2013/08/10 last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::setupCircuitParameter()
-{
-	// set depthFromPo_
-	calculateGateDepthFromPO();
+void Atpg::setupCircuitParameter() {
+    // set depthFromPo_
+    calculateGateDepthFromPO();
 
-	// Determine the lineType of a gate is FREE_LINE, BOUND_LINE or HEAD_LINE.
-	identifyGateLineType();
+    // Determine the lineType of a gate is FREE_LINE, BOUND_LINE or HEAD_LINE.
+    identifyGateLineType();
 
-	// see identifyGateDominator()
-	identifyGateDominator();
+    // see identifyGateDominator()
+    identifyGateDominator();
 
-	// see identifyGateUniquePath()
-	identifyGateUniquePath();
+    // see identifyGateUniquePath()
+    identifyGateUniquePath();
 }
 
 // **************************************************************************
@@ -149,31 +137,24 @@ void Atpg::setupCircuitParameter()
 //            ]
 // Date       [ started 2020/07/06 last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::calculateGateDepthFromPO()
-{
-	for (int gateID = pCircuit_->totalGate_ - 1; gateID >= 0; --gateID)
-	{
-		Gate &gate = pCircuit_->circuitGates_[gateID];
-		gateID_to_valModified_[gateID] = 0; // sneak the initialization assignment in here
+void Atpg::calculateGateDepthFromPO() {
+    for (int gateID = pCircuit_->totalGate_ - 1; gateID >= 0; --gateID) {
+        Gate& gate = pCircuit_->circuitGates_[gateID];
+        gateID_to_valModified_[gateID] = 0;  // sneak the initialization assignment in here
 
-		gate.depthFromPo_ = INFINITE;
-		if ((gate.gateType_ == Gate::PO) || (gate.gateType_ == Gate::PPO))
-		{
-			gate.depthFromPo_ = 0;
-		}
-		else if (gate.numFO_ > 0)
-		{
-			for (const int &fanOutGateID : gate.fanoutVector_)
-			{
-				const Gate &fanOutGate = pCircuit_->circuitGates_[fanOutGateID];
-				if (fanOutGate.depthFromPo_ < gate.depthFromPo_)
-				{
-					gate.depthFromPo_ = fanOutGate.depthFromPo_ + 1;
-				}
-			}
-		}
-		// else exist no path to output, so default assignment large number
-	}
+        gate.depthFromPo_ = INFINITE;
+        if ((gate.gateType_ == Gate::PO) || (gate.gateType_ == Gate::PPO)) {
+            gate.depthFromPo_ = 0;
+        } else if (gate.numFO_ > 0) {
+            for (const int& fanOutGateID : gate.fanoutVector_) {
+                const Gate& fanOutGate = pCircuit_->circuitGates_[fanOutGateID];
+                if (fanOutGate.depthFromPo_ < gate.depthFromPo_) {
+                    gate.depthFromPo_ = fanOutGate.depthFromPo_ + 1;
+                }
+            }
+        }
+        // else exist no path to output, so default assignment large number
+    }
 }
 
 // **************************************************************************
@@ -189,65 +170,53 @@ void Atpg::calculateGateDepthFromPO()
 //            ]
 // Date       [ CKY Ver. 1.0 started 2013/08/17 last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::identifyGateLineType()
-{
-	numOfheadLines_ = 0;
+void Atpg::identifyGateLineType() {
+    numOfheadLines_ = 0;
 
-	for (const Gate &gate : pCircuit_->circuitGates_)
-	{
-		const int &gateID = gate.gateId_;
+    for (const Gate& gate : pCircuit_->circuitGates_) {
+        const int& gateID = gate.gateId_;
 
-		gateID_to_lineType_[gateID] = FREE_LINE; // initialize to FREE_LINE
+        gateID_to_lineType_[gateID] = FREE_LINE;  // initialize to FREE_LINE
 
-		if (gate.gateType_ != Gate::PI && gate.gateType_ != Gate::PPI)
-		{
-			for (const int &fanInGateID : gate.faninVector_)
-			{
-				if (gateID_to_lineType_[fanInGateID] != FREE_LINE)
-				{
-					gateID_to_lineType_[gateID] = BOUND_LINE;
-					break;
-				}
-			}
-		}
+        if (gate.gateType_ != Gate::PI && gate.gateType_ != Gate::PPI) {
+            for (const int& fanInGateID : gate.faninVector_) {
+                if (gateID_to_lineType_[fanInGateID] != FREE_LINE) {
+                    gateID_to_lineType_[gateID] = BOUND_LINE;
+                    break;
+                }
+            }
+        }
 
-		// check it is HEAD_LINE or not(rule 1)
-		if ((gateID_to_lineType_[gateID] == FREE_LINE) && (gate.numFO_ != 1))
-		{
-			gateID_to_lineType_[gateID] = HEAD_LINE;
-			++numOfheadLines_;
-		}
+        // check it is HEAD_LINE or not(rule 1)
+        if ((gateID_to_lineType_[gateID] == FREE_LINE) && (gate.numFO_ != 1)) {
+            gateID_to_lineType_[gateID] = HEAD_LINE;
+            ++numOfheadLines_;
+        }
 
-		// check it is HEAD_LINE or not(rule 2)
-		if (gateID_to_lineType_[gate.gateId_] == BOUND_LINE)
-		{
-			for (const int &fanInGateID : gate.faninVector_)
-			{
-				if (gateID_to_lineType_[fanInGateID] == FREE_LINE)
-				{
-					gateID_to_lineType_[fanInGateID] = HEAD_LINE;
-					++numOfheadLines_;
-				}
-			}
-		}
-	}
+        // check it is HEAD_LINE or not(rule 2)
+        if (gateID_to_lineType_[gate.gateId_] == BOUND_LINE) {
+            for (const int& fanInGateID : gate.faninVector_) {
+                if (gateID_to_lineType_[fanInGateID] == FREE_LINE) {
+                    gateID_to_lineType_[fanInGateID] = HEAD_LINE;
+                    ++numOfheadLines_;
+                }
+            }
+        }
+    }
 
-	// store all head lines to array headLineGateIDs_
-	headLineGateIDs_.reserve(numOfheadLines_);
+    // store all head lines to array headLineGateIDs_
+    headLineGateIDs_.reserve(numOfheadLines_);
 
-	int count = 0;
-	for (const Gate &gate : pCircuit_->circuitGates_)
-	{
-		if (gateID_to_lineType_[gate.gateId_] == HEAD_LINE)
-		{
-			headLineGateIDs_.push_back(gate.gateId_);
-			++count;
-		}
-		if (count == numOfheadLines_)
-		{
-			break;
-		}
-	}
+    int count = 0;
+    for (const Gate& gate : pCircuit_->circuitGates_) {
+        if (gateID_to_lineType_[gate.gateId_] == HEAD_LINE) {
+            headLineGateIDs_.push_back(gate.gateId_);
+            ++count;
+        }
+        if (count == numOfheadLines_) {
+            break;
+        }
+    }
 }
 
 // **************************************************************************
@@ -291,84 +260,68 @@ void Atpg::identifyGateLineType()
 //
 // Date       [ Ver. 1.0 started 2013/08/13  last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::identifyGateDominator()
-{
-	for (int i = pCircuit_->totalGate_ - 1; i >= 0; --i)
-	{
-		Gate &gate = pCircuit_->circuitGates_[i];
-		if (gate.numFO_ <= 1) // if gate has only 1 or 0 output skip this gate
-		{
-			continue;
-		}
+void Atpg::identifyGateDominator() {
+    for (int i = pCircuit_->totalGate_ - 1; i >= 0; --i) {
+        Gate& gate = pCircuit_->circuitGates_[i];
+        if (gate.numFO_ <= 1)  // if gate has only 1 or 0 output skip this gate
+        {
+            continue;
+        }
 
-		int gateCount = pushGateFanoutsToEventStack(i);
-		for (int j = gate.numLevel_ + 1; j < pCircuit_->totalLvl_; ++j)
-		{
-			// if next level's output isn't empty
-			while (!circuitLevel_to_EventStack_[j].empty())
-			{
-				Gate &gDom = pCircuit_->circuitGates_[circuitLevel_to_EventStack_[j].top()];
-				circuitLevel_to_EventStack_[j].pop();
-				gateID_to_valModified_[gDom.gateId_] = 0; // set the gDom to not handle
-				// Because the gateCount is zero while the circuitLevel_to_EventStack_ is not zero, we
-				// only need to pop without other operations. That is, continue operation.
-				if (gateCount <= 0)
-				{
-					continue;
-				}
+        int gateCount = pushGateFanoutsToEventStack(i);
+        for (int j = gate.numLevel_ + 1; j < pCircuit_->totalLvl_; ++j) {
+            // if next level's output isn't empty
+            while (!circuitLevel_to_EventStack_[j].empty()) {
+                Gate& gDom = pCircuit_->circuitGates_[circuitLevel_to_EventStack_[j].top()];
+                circuitLevel_to_EventStack_[j].pop();
+                gateID_to_valModified_[gDom.gateId_] = 0;  // set the gDom to not handle
+                // Because the gateCount is zero while the circuitLevel_to_EventStack_ is not zero, we
+                // only need to pop without other operations. That is, continue operation.
+                if (gateCount <= 0) {
+                    continue;
+                }
 
-				--gateCount;
+                --gateCount;
 
-				if (gateCount == 0)
-				{
-					if ((int)gateID_to_uniquePath_.capacity() < pCircuit_->totalLvl_)
-					{
-						gateID_to_uniquePath_.reserve(pCircuit_->totalLvl_);
-					}
-					// when all the fanout gate has been calculated
-					gateID_to_uniquePath_[gate.gateId_].push_back(gDom.gateId_); // push the last calculate fanout gate into gateID_to_uniquePath_
-					break;
-				}
-				// If there is a gate without gates on its output, then we suppose that this
-				// gate is PO/PPO.  Because there are other gates still inside the
-				// event queue (gateCount larger than 1), it means that gate gate does
-				// not have any dominator.  Hence, we will set gateCount to zero as a
-				// signal to clear the gates left in circuitLevel_to_EventStack_.  While the circuitLevel_to_EventStack_ is
-				// not empty but gateCount is zero, we will continue.
-				if (gDom.numFO_ == 0)
-				{
-					gateCount = 0;
-				}
-				else if (gDom.numFO_ > 1)
-				{
-					if ((int)gateID_to_uniquePath_[gDom.gateId_].size() == 0)
-					{
-						gateCount = 0;
-					}
-					else
-					{
-						// Because the first gate in gateID_to_uniquePath_ is the closest Dominator, we just
-						// push it to the circuitLevel_to_EventStack_. Then, we can skip the operation we have done
-						// for gates with higher circuitLvl_ than gate gate.
-						Gate &gTmp = pCircuit_->circuitGates_[gateID_to_uniquePath_[gDom.gateId_][0]];
-						if (!gateID_to_valModified_[gTmp.gateId_])
-						{
-							circuitLevel_to_EventStack_[gTmp.numLevel_].push(gTmp.gateId_);
-							gateID_to_valModified_[gTmp.gateId_] = 1;
-							++gateCount;
-						}
-					}
-				}
-				else if (!gateID_to_valModified_[gDom.fanoutVector_[0]])
-				{
-					Gate &gTmp = pCircuit_->circuitGates_[gDom.fanoutVector_[0]];
-					circuitLevel_to_EventStack_[gTmp.numLevel_].push(gTmp.gateId_);
-					gateID_to_valModified_[gTmp.gateId_] = 1;
-					++gateCount;
-				}
-			}
-		}
-	}
+                if (gateCount == 0) {
+                    if ((int)gateID_to_uniquePath_.capacity() < pCircuit_->totalLvl_) {
+                        gateID_to_uniquePath_.reserve(pCircuit_->totalLvl_);
+                    }
+                    // when all the fanout gate has been calculated
+                    gateID_to_uniquePath_[gate.gateId_].push_back(gDom.gateId_);  // push the last calculate fanout gate into gateID_to_uniquePath_
+                    break;
+                }
+                // If there is a gate without gates on its output, then we suppose that this
+                // gate is PO/PPO.  Because there are other gates still inside the
+                // event queue (gateCount larger than 1), it means that gate gate does
+                // not have any dominator.  Hence, we will set gateCount to zero as a
+                // signal to clear the gates left in circuitLevel_to_EventStack_.  While the circuitLevel_to_EventStack_ is
+                // not empty but gateCount is zero, we will continue.
+                if (gDom.numFO_ == 0) {
+                    gateCount = 0;
+                } else if (gDom.numFO_ > 1) {
+                    if ((int)gateID_to_uniquePath_[gDom.gateId_].size() == 0) {
+                        gateCount = 0;
+                    } else {
+                        // Because the first gate in gateID_to_uniquePath_ is the closest Dominator, we just
+                        // push it to the circuitLevel_to_EventStack_. Then, we can skip the operation we have done
+                        // for gates with higher circuitLvl_ than gate gate.
+                        Gate& gTmp = pCircuit_->circuitGates_[gateID_to_uniquePath_[gDom.gateId_][0]];
+                        if (!gateID_to_valModified_[gTmp.gateId_]) {
+                            circuitLevel_to_EventStack_[gTmp.numLevel_].push(gTmp.gateId_);
+                            gateID_to_valModified_[gTmp.gateId_] = 1;
+                            ++gateCount;
+                        }
+                    }
+                } else if (!gateID_to_valModified_[gDom.fanoutVector_[0]]) {
+                    Gate& gTmp = pCircuit_->circuitGates_[gDom.fanoutVector_[0]];
+                    circuitLevel_to_EventStack_[gTmp.numLevel_].push(gTmp.gateId_);
+                    gateID_to_valModified_[gTmp.gateId_] = 1;
+                    ++gateCount;
+                }
+            }
+        }
+    }
 }
 
 // **************************************************************************
@@ -413,47 +366,40 @@ void Atpg::identifyGateDominator()
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13  last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::identifyGateUniquePath()
-{
-	static std::vector<int> reachableByDominator(pCircuit_->totalGate_);
-	for (int i = pCircuit_->totalGate_ - 1; i >= 0; --i)
-	{
-		Gate &gate = pCircuit_->circuitGates_[i];
-		// Because we will call identifyGateDominator before entering this function,
-		// a gate with gateID_to_uniquePath_ will contain one Dominator.  Hence, we can
-		// skip the gates while the sizes of their gateID_to_uniquePath_ is zero.
-		if (gateID_to_uniquePath_[gate.gateId_].size() == 0)
-		{
-			continue;
-		}
+void Atpg::identifyGateUniquePath() {
+    static std::vector<int> reachableByDominator(pCircuit_->totalGate_);
+    for (int i = pCircuit_->totalGate_ - 1; i >= 0; --i) {
+        Gate& gate = pCircuit_->circuitGates_[i];
+        // Because we will call identifyGateDominator before entering this function,
+        // a gate with gateID_to_uniquePath_ will contain one Dominator.  Hence, we can
+        // skip the gates while the sizes of their gateID_to_uniquePath_ is zero.
+        if (gateID_to_uniquePath_[gate.gateId_].size() == 0) {
+            continue;
+        }
 
-		reachableByDominator[gate.gateId_] = i;
-		int count = pushGateFanoutsToEventStack(i);
-		for (int j = gate.numLevel_ + 1; j < pCircuit_->totalLvl_; ++j)
-		{
-			while (!circuitLevel_to_EventStack_[j].empty())
-			{ // if fanout gate was not empty
-				Gate &gTmp = pCircuit_->circuitGates_[circuitLevel_to_EventStack_[j].top()];
-				circuitLevel_to_EventStack_[j].pop();
-				gateID_to_valModified_[gTmp.gateId_] = 0;
-				reachableByDominator[gTmp.gateId_] = i;
-				--count;
-				if (count == 0)
-				{
-					for (int gReachID : gTmp.faninVector_)
-					{
-						if (reachableByDominator[gReachID] == i) // if it is UniquePath
-						{
-							// save gate to gateID_to_uniquePath_ list
-							gateID_to_uniquePath_[gate.gateId_].push_back(gReachID);
-						}
-					}
-					break;
-				}
-				count += pushGateFanoutsToEventStack(gTmp.gateId_);
-			}
-		}
-	}
+        reachableByDominator[gate.gateId_] = i;
+        int count = pushGateFanoutsToEventStack(i);
+        for (int j = gate.numLevel_ + 1; j < pCircuit_->totalLvl_; ++j) {
+            while (!circuitLevel_to_EventStack_[j].empty()) {  // if fanout gate was not empty
+                Gate& gTmp = pCircuit_->circuitGates_[circuitLevel_to_EventStack_[j].top()];
+                circuitLevel_to_EventStack_[j].pop();
+                gateID_to_valModified_[gTmp.gateId_] = 0;
+                reachableByDominator[gTmp.gateId_] = i;
+                --count;
+                if (count == 0) {
+                    for (int gReachID : gTmp.faninVector_) {
+                        if (reachableByDominator[gReachID] == i)  // if it is UniquePath
+                        {
+                            // save gate to gateID_to_uniquePath_ list
+                            gateID_to_uniquePath_[gate.gateId_].push_back(gReachID);
+                        }
+                    }
+                    break;
+                }
+                count += pushGateFanoutsToEventStack(gTmp.gateId_);
+            }
+        }
+    }
 }
 
 // **************************************************************************
@@ -474,39 +420,32 @@ void Atpg::identifyGateUniquePath()
 //            ]
 // Date       [ HKY Ver. 1.0 started 2014/09/01 last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::TransitionDelayFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
-{
-	const Fault &fTDF = *faultPtrListForGen.front();
+void Atpg::TransitionDelayFaultATPG(FaultPtrList& faultPtrListForGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults) {
+    const Fault& fTDF = *faultPtrListForGen.front();
 
-	SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(Fault(fTDF.gateID_ + pCircuit_->numGate_, fTDF.faultType_, fTDF.faultyLine_, fTDF.equivalent_, fTDF.faultState_), false);
-	if (result == PATTERN_FOUND)
-	{
-		Pattern pattern(pCircuit_);
-		pattern.initForTransitionDelayFault(pCircuit_);
-		pPatternProcessor->patternVector_.push_back(pattern);
-		writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
+    SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(Fault(fTDF.gateID_ + pCircuit_->numGate_, fTDF.faultType_, fTDF.faultyLine_, fTDF.equivalent_, fTDF.faultState_), false);
+    if (result == PATTERN_FOUND) {
+        Pattern pattern(pCircuit_);
+        pattern.initForTransitionDelayFault(pCircuit_);
+        pPatternProcessor->patternVector_.push_back(pattern);
+        writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
 
-		if ((pPatternProcessor->staticCompression_ == PatternProcessor::OFF) && (pPatternProcessor->XFill_ == PatternProcessor::ON))
-		{
-			randomFill(pPatternProcessor->patternVector_.back());
-		}
+        if ((pPatternProcessor->staticCompression_ == PatternProcessor::OFF) && (pPatternProcessor->XFill_ == PatternProcessor::ON)) {
+            randomFill(pPatternProcessor->patternVector_.back());
+        }
 
-		pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultPtrListForGen);
-		pSimulator_->goodSim();
-		writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
-	}
-	else if (result == FAULT_UNTESTABLE)
-	{
-		faultPtrListForGen.front()->faultState_ = Fault::AU;
-		numOfAtpgUntestableFaults += faultPtrListForGen.front()->equivalent_;
-		faultPtrListForGen.pop_front();
-	}
-	else
-	{
-		faultPtrListForGen.front()->faultState_ = Fault::AB;
-		faultPtrListForGen.push_back(faultPtrListForGen.front());
-		faultPtrListForGen.pop_front();
-	}
+        pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultPtrListForGen);
+        pSimulator_->goodSim();
+        writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
+    } else if (result == FAULT_UNTESTABLE) {
+        faultPtrListForGen.front()->faultState_ = Fault::AU;
+        numOfAtpgUntestableFaults += faultPtrListForGen.front()->equivalent_;
+        faultPtrListForGen.pop_front();
+    } else {
+        faultPtrListForGen.front()->faultState_ = Fault::AB;
+        faultPtrListForGen.push_back(faultPtrListForGen.front());
+        faultPtrListForGen.pop_front();
+    }
 }
 
 // **************************************************************************
@@ -581,114 +520,96 @@ void Atpg::TransitionDelayFaultATPG(FaultPtrList &faultPtrListForGen, PatternPro
 //            ]
 // Date       [ started 2020/07/07    last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
-{
-	SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(*faultPtrListForGen.front(), false);
-	if (result == PATTERN_FOUND)
-	{
-		Pattern pattern(pCircuit_);
-		pPatternProcessor->patternVector_.push_back(pattern);
+void Atpg::StuckAtFaultATPG(FaultPtrList& faultPtrListForGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults) {
+    // std::cout << faultPtrListForGen.size() << " " << faultPtrListForGen.front()->gateID_ << std::endl;
+    SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(*faultPtrListForGen.front(), false);
+    std::cout << "result: " << result << std::endl;
+    if (result == PATTERN_FOUND) {
+        Pattern pattern(pCircuit_);
+        pPatternProcessor->patternVector_.push_back(pattern);
 
-		resetPrevAtpgValStored();
-		clearAllFaultEffectByEvaluation();
-		storeCurrentAtpgVal();
-		writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
+        resetPrevAtpgValStored();
+        clearAllFaultEffectByEvaluation();
+        storeCurrentAtpgVal();
+        writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
 
-		if (pPatternProcessor->dynamicCompression_ == PatternProcessor::ON)
-		{
-			FaultPtrList faultListTemp = faultPtrListForGen;
-			pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultPtrListForGen);
-			pSimulator_->goodSim();
-			writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
+        if (pPatternProcessor->dynamicCompression_ == PatternProcessor::ON) {
+            FaultPtrList faultListTemp = faultPtrListForGen;
+            pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultPtrListForGen);
+            pSimulator_->goodSim();
+            writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
 
-			for (Fault *pFault : faultListTemp)
-			{
-				// skip detected faults
-				if (pFault->faultState_ == Fault::DT)
-				{
-					continue;
-				}
+            for (Fault* pFault : faultListTemp) {
+                // skip detected faults
+                if (pFault->faultState_ == Fault::DT) {
+                    continue;
+                }
 
-				Gate *pGateForActivation = getGateForFaultActivation(*pFault);
-				if (((pGateForActivation->atpgVal_ == L) && (pFault->faultType_ == Fault::SA0)) ||
-					((pGateForActivation->atpgVal_ == H) && (pFault->faultType_ == Fault::SA1)))
-				{
-					continue;
-				}
+                Gate* pGateForActivation = getGateForFaultActivation(*pFault);
+                if (((pGateForActivation->atpgVal_ == L) && (pFault->faultType_ == Fault::SA0)) ||
+                    ((pGateForActivation->atpgVal_ == H) && (pFault->faultType_ == Fault::SA1))) {
+                    continue;
+                }
 
-				// Activation check
-				if (pGateForActivation->atpgVal_ != X)
-				{
-					if ((pFault->faultType_ == Fault::SA0) || (pFault->faultType_ == Fault::SA1))
-					{
-						setGateAtpgValAndRunImplication((*pGateForActivation), X);
-					}
-					else
-					{
-						continue;
-					}
-				}
+                // Activation check
+                if (pGateForActivation->atpgVal_ != X) {
+                    if ((pFault->faultType_ == Fault::SA0) || (pFault->faultType_ == Fault::SA1)) {
+                        setGateAtpgValAndRunImplication((*pGateForActivation), X);
+                    } else {
+                        continue;
+                    }
+                }
 
-				if (xPathExists(pGateForActivation))
-				{
-					// TO-DO homework 05 implement DTC here end of TO-DO
-					if (generateSinglePatternOnTargetFault(*pFault, true) == PATTERN_FOUND)
-					{
-						resetPrevAtpgValStored();
-						clearAllFaultEffectByEvaluation();
-						storeCurrentAtpgVal();
-						writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
-					}
-					else
-					{
-						for (Gate &gate : pCircuit_->circuitGates_)
-						{
-							gate.atpgVal_ = gate.prevAtpgValStored_;
-						}
-					}
-				}
-				else
-				{
-					setGateAtpgValAndRunImplication((*pGateForActivation), pGateForActivation->prevAtpgValStored_);
-				}
-			}
-		}
+                if (xPathExists(pGateForActivation)) {
+                    // TO-DO homework 05 implement DTC here end of TO-DO
+                    if (generateSinglePatternOnTargetFault(*pFault, true) == PATTERN_FOUND) {
+                        resetPrevAtpgValStored();
+                        clearAllFaultEffectByEvaluation();
+                        storeCurrentAtpgVal();
+                        writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
+                    } else {
+                        for (Gate& gate : pCircuit_->circuitGates_) {
+                            gate.atpgVal_ = gate.prevAtpgValStored_;
+                        }
+                    }
+                } else {
+                    setGateAtpgValAndRunImplication((*pGateForActivation), pGateForActivation->prevAtpgValStored_);
+                }
+            }
+        }
 
-		clearAllFaultEffectByEvaluation();
-		storeCurrentAtpgVal();
-		writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
+        clearAllFaultEffectByEvaluation();
+        storeCurrentAtpgVal();
+        writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
 
-		if (pPatternProcessor->XFill_ == PatternProcessor::ON)
-		{
-			// Randomly fill the pats_.back().
-			// Note that the v_, gh_, gl_, fh_ and fl_ do not be changed.
-			randomFill(pPatternProcessor->patternVector_.back());
-		}
+        if (pPatternProcessor->XFill_ == PatternProcessor::ON) {
+            // Randomly fill the pats_.back().
+            // Note that the v_, gh_, gl_, fh_ and fl_ do not be changed.
+            randomFill(pPatternProcessor->patternVector_.back());
+        }
 
-		//  This function will assign pi/ppi stored in pats_.back() to
-		//  the gh_ and gl_ in each gate, and then it will run fault
-		//  simulation to drop fault.
+        //  This function will assign pi/ppi stored in pats_.back() to
+        //  the gh_ and gl_ in each gate, and then it will run fault
+        //  simulation to drop fault.
 
-		pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultPtrListForGen);
+        pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultPtrListForGen);
+        // cxp
+        // pSimulator_->assignPatternToCircuitInputs(pPatternProcessor->patternVector_.back());
 
-		// After pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(),faultListToGen) , the pi/ppi
-		// values have been passed to gh_ and gl_ of each gate.  Therefore, we can
-		// directly use "writeGoodSimValToPatternPO" to perform goodSim to get the PoValue.
-		pSimulator_->goodSim();
-		writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
-	}
-	else if (result == FAULT_UNTESTABLE)
-	{
-		faultPtrListForGen.front()->faultState_ = Fault::AU;
-		numOfAtpgUntestableFaults += faultPtrListForGen.front()->equivalent_;
-		faultPtrListForGen.pop_front();
-	}
-	else
-	{
-		faultPtrListForGen.front()->faultState_ = Fault::AB;
-		faultPtrListForGen.push_back(faultPtrListForGen.front());
-		faultPtrListForGen.pop_front();
-	}
+        // After pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(),faultListToGen) , the pi/ppi
+        // values have been passed to gh_ and gl_ of each gate.  Therefore, we can
+        // directly use "writeGoodSimValToPatternPO" to perform goodSim to get the PoValue.
+        pSimulator_->goodSim();
+        writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
+    } else if (result == FAULT_UNTESTABLE) {
+        faultPtrListForGen.front()->faultState_ = Fault::AU;
+        numOfAtpgUntestableFaults += faultPtrListForGen.front()->equivalent_;
+        faultPtrListForGen.pop_front();
+    } else {
+        faultPtrListForGen.front()->faultState_ = Fault::AB;
+        faultPtrListForGen.push_back(faultPtrListForGen.front());
+        faultPtrListForGen.pop_front();
+    }
 }
 
 // **************************************************************************
@@ -708,20 +629,16 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *
 //            ]
 // Date       [ started 2020/07/07    last modified 2023/01/05 ]
 // **************************************************************************
-Gate *Atpg::getGateForFaultActivation(const Fault &faultToActivate)
-{
-	bool isOutputFault = (faultToActivate.faultyLine_ == 0);
-	Gate *pGateForActivation = NULL;
-	Gate *pFaultyGate = &pCircuit_->circuitGates_[faultToActivate.gateID_];
-	if (!isOutputFault)
-	{
-		pGateForActivation = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[faultToActivate.faultyLine_ - 1]];
-	}
-	else
-	{
-		pGateForActivation = pFaultyGate;
-	}
-	return pGateForActivation;
+Gate* Atpg::getGateForFaultActivation(const Fault& faultToActivate) {
+    bool isOutputFault = (faultToActivate.faultyLine_ == 0);
+    Gate* pGateForActivation = NULL;
+    Gate* pFaultyGate = &pCircuit_->circuitGates_[faultToActivate.gateID_];
+    if (!isOutputFault) {
+        pGateForActivation = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[faultToActivate.faultyLine_ - 1]];
+    } else {
+        pGateForActivation = pFaultyGate;
+    }
+    return pGateForActivation;
 }
 
 // **************************************************************************
@@ -744,45 +661,37 @@ Gate *Atpg::getGateForFaultActivation(const Fault &faultToActivate)
 //            ]
 // Date       [ started 2020/07/07    last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::setGateAtpgValAndRunImplication(Gate &gate, const Value &val)
-{
-	clearEventStack(false);
-	gate.atpgVal_ = val;
-	for (const int &fanoutID : gate.fanoutVector_)
-	{
-		Gate &og = pCircuit_->circuitGates_[fanoutID];
-		if (isInEventStack_[og.gateId_] == 0)
-		{
-			circuitLevel_to_EventStack_[og.numLevel_].push(og.gateId_);
-			isInEventStack_[og.gateId_] = 1;
-		}
-	}
+void Atpg::setGateAtpgValAndRunImplication(Gate& gate, const Value& val) {
+    clearEventStack(false);
+    gate.atpgVal_ = val;
+    for (const int& fanoutID : gate.fanoutVector_) {
+        Gate& og = pCircuit_->circuitGates_[fanoutID];
+        if (isInEventStack_[og.gateId_] == 0) {
+            circuitLevel_to_EventStack_[og.numLevel_].push(og.gateId_);
+            isInEventStack_[og.gateId_] = 1;
+        }
+    }
 
-	// event-driven simulation
-	for (int i = gate.numLevel_; i < pCircuit_->totalLvl_; ++i)
-	{
-		while (!circuitLevel_to_EventStack_[i].empty())
-		{
-			int gateID = circuitLevel_to_EventStack_[i].top();
-			circuitLevel_to_EventStack_[i].pop();
-			isInEventStack_[gateID] = 0;
-			Gate &currGate = pCircuit_->circuitGates_[gateID];
-			Value newValue = evaluateGoodVal(currGate);
-			if (currGate.atpgVal_ != newValue)
-			{
-				currGate.atpgVal_ = newValue;
-				for (int j = 0; j < currGate.numFO_; ++j)
-				{
-					Gate &og = pCircuit_->circuitGates_[currGate.fanoutVector_[j]];
-					if (isInEventStack_[og.gateId_] == 0)
-					{
-						circuitLevel_to_EventStack_[og.numLevel_].push(og.gateId_);
-						isInEventStack_[og.gateId_] = 1;
-					}
-				}
-			}
-		}
-	}
+    // event-driven simulation
+    for (int i = gate.numLevel_; i < pCircuit_->totalLvl_; ++i) {
+        while (!circuitLevel_to_EventStack_[i].empty()) {
+            int gateID = circuitLevel_to_EventStack_[i].top();
+            circuitLevel_to_EventStack_[i].pop();
+            isInEventStack_[gateID] = 0;
+            Gate& currGate = pCircuit_->circuitGates_[gateID];
+            Value newValue = evaluateGoodVal(currGate);
+            if (currGate.atpgVal_ != newValue) {
+                currGate.atpgVal_ = newValue;
+                for (int j = 0; j < currGate.numFO_; ++j) {
+                    Gate& og = pCircuit_->circuitGates_[currGate.fanoutVector_[j]];
+                    if (isInEventStack_[og.gateId_] == 0) {
+                        circuitLevel_to_EventStack_[og.numLevel_].push(og.gateId_);
+                        isInEventStack_[og.gateId_] = 1;
+                    }
+                }
+            }
+        }
+    }
 }
 
 // **************************************************************************
@@ -791,12 +700,10 @@ void Atpg::setGateAtpgValAndRunImplication(Gate &gate, const Value &val)
 // Synopsis   [ usage: Reset the prevAtpgValStored_ of each gate to X. ]
 // Date       [ started 2020/07/07    last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::resetPrevAtpgValStored()
-{
-	for (Gate &gate : pCircuit_->circuitGates_)
-	{
-		gate.prevAtpgValStored_ = X;
-	}
+void Atpg::resetPrevAtpgValStored() {
+    for (Gate& gate : pCircuit_->circuitGates_) {
+        gate.prevAtpgValStored_ = X;
+    }
 }
 
 // **************************************************************************
@@ -812,24 +719,20 @@ void Atpg::resetPrevAtpgValStored()
 //            ]
 // Date       [ started 2020/07/04    last modified 2023/01/05 ]
 // **************************************************************************
-int Atpg::storeCurrentAtpgVal()
-{
-	int numAssignedValueChanged = 0;
-	for (Gate &gate : pCircuit_->circuitGates_)
-	{
-		if ((gate.prevAtpgValStored_ != X) && (gate.prevAtpgValStored_ != gate.atpgVal_))
-		{
-			++numAssignedValueChanged;
-		}
-		gate.prevAtpgValStored_ = gate.atpgVal_;
-	}
+int Atpg::storeCurrentAtpgVal() {
+    int numAssignedValueChanged = 0;
+    for (Gate& gate : pCircuit_->circuitGates_) {
+        if ((gate.prevAtpgValStored_ != X) && (gate.prevAtpgValStored_ != gate.atpgVal_)) {
+            ++numAssignedValueChanged;
+        }
+        gate.prevAtpgValStored_ = gate.atpgVal_;
+    }
 
-	if (numAssignedValueChanged != 0)
-	{
-		std::cerr << "Bug: storeCurrentAtpgVal detects the numAssignedValueChanged is not 0\n";
-		std::cin.get();
-	}
-	return numAssignedValueChanged;
+    if (numAssignedValueChanged != 0) {
+        std::cerr << "Bug: storeCurrentAtpgVal detects the numAssignedValueChanged is not 0\n";
+        std::cin.get();
+    }
+    return numAssignedValueChanged;
 }
 
 // **************************************************************************
@@ -841,22 +744,17 @@ int Atpg::storeCurrentAtpgVal()
 //            ]
 // Date       [ started 2020/07/04    last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::clearAllFaultEffectByEvaluation()
-{
-	int numOfInputGate = pCircuit_->numPI_ + pCircuit_->numPPI_;
-	for (Gate &gate : pCircuit_->circuitGates_)
-	{
-		if (gate.gateId_ < numOfInputGate)
-		{
-			// Remove fault effects in input gates
-			clearFaultEffectOnGateAtpgVal(gate);
-		}
-		else
-		{
-			// Simulate the whole circuit ( gates were sorted by circuitLvl_ in "pCircuit_->circuitGates_" )
-			gate.atpgVal_ = evaluateGoodVal(gate);
-		}
-	}
+void Atpg::clearAllFaultEffectByEvaluation() {
+    int numOfInputGate = pCircuit_->numPI_ + pCircuit_->numPPI_;
+    for (Gate& gate : pCircuit_->circuitGates_) {
+        if (gate.gateId_ < numOfInputGate) {
+            // Remove fault effects in input gates
+            clearFaultEffectOnGateAtpgVal(gate);
+        } else {
+            // Simulate the whole circuit ( gates were sorted by circuitLvl_ in "pCircuit_->circuitGates_" )
+            gate.atpgVal_ = evaluateGoodVal(gate);
+        }
+    }
 }
 
 // **************************************************************************
@@ -870,16 +768,12 @@ void Atpg::clearAllFaultEffectByEvaluation()
 //            ]
 // Date       [ started 2020/07/04    last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::clearFaultEffectOnGateAtpgVal(Gate &gate)
-{
-	if (gate.atpgVal_ == D)
-	{
-		gate.atpgVal_ = H;
-	}
-	else if (gate.atpgVal_ == B)
-	{
-		gate.atpgVal_ = L;
-	}
+void Atpg::clearFaultEffectOnGateAtpgVal(Gate& gate) {
+    if (gate.atpgVal_ == D) {
+        gate.atpgVal_ = H;
+    } else if (gate.atpgVal_ == B) {
+        gate.atpgVal_ = L;
+    }
 }
 
 // **************************************************************************
@@ -983,183 +877,161 @@ void Atpg::clearFaultEffectOnGateAtpgVal(Gate &gate)
 //            ]
 // Date       [ KOREAL Ver. 1.0 started 2013/08/10 last modified 2023/01/05 ]
 // **************************************************************************
-Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(Fault targetFault, bool isAtStageDTC)
-{
+Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(Fault targetFault, bool isAtStageDTC) {
+    int backwardImplicationLevel = 0;                            // backward imply level
+    int numOfBacktrack = 0;                                      // backtrack times
+    bool Finish = false;                                         // Finish is true when whole pattern generation process is done
+    bool faultHasPropagatedToPO = false;                         // faultHasPropagatedToPO is true when the fault is propagate to the PO
+    Gate* pFaultyLine = NULL;                                    // the gate pointer, whose fanOut is the target fault
+    Gate* pLastDFrontier = NULL;                                 // the D-frontier gate which has the highest level of the D-frontier
+    IMPLICATION_STATUS implicationStatus;                        // decide implication to go forward or backward
+    BACKTRACE_STATUS backtraceFlag;                              // backtrace flag including    { INITIAL, CHECK_AND_SELECT, CURRENT_OBJ_DETERMINE, FAN_OBJ_DETERMINE }
+    SINGLE_PATTERN_GENERATION_STATUS genStatus = PATTERN_FOUND;  // the atpgStatus that will be return, including		{ PATTERN_FOUND, FAULT_UNTESTABLE, ABORT }
 
-	int backwardImplicationLevel = 0;							// backward imply level
-	int numOfBacktrack = 0;										// backtrack times
-	bool Finish = false;										// Finish is true when whole pattern generation process is done
-	bool faultHasPropagatedToPO = false;						// faultHasPropagatedToPO is true when the fault is propagate to the PO
-	Gate *pFaultyLine = NULL;									// the gate pointer, whose fanOut is the target fault
-	Gate *pLastDFrontier = NULL;								// the D-frontier gate which has the highest level of the D-frontier
-	IMPLICATION_STATUS implicationStatus;						// decide implication to go forward or backward
-	BACKTRACE_STATUS backtraceFlag;								// backtrace flag including    { INITIAL, CHECK_AND_SELECT, CURRENT_OBJ_DETERMINE, FAN_OBJ_DETERMINE }
-	SINGLE_PATTERN_GENERATION_STATUS genStatus = PATTERN_FOUND; // the atpgStatus that will be return, including		{ PATTERN_FOUND, FAULT_UNTESTABLE, ABORT }
+    // Get the gate whose output is fault line and set the backwardImplicationLevel
+    // SET A FAULT SIGNAL
+    pFaultyLine = initializeForSinglePatternGeneration(targetFault, backwardImplicationLevel, implicationStatus, isAtStageDTC);
 
-	// Get the gate whose output is fault line and set the backwardImplicationLevel
-	// SET A FAULT SIGNAL
-	pFaultyLine = initializeForSinglePatternGeneration(targetFault, backwardImplicationLevel, implicationStatus, isAtStageDTC);
-	// If there's no such gate, return FAULT_UNTESTABLE
-	if (!pFaultyLine)
-	{
-		return FAULT_UNTESTABLE;
-	}
-	// SET BACKTRACE FLAG
-	backtraceFlag = INITIAL;
+    // If there's no such gate, return FAULT_UNTESTABLE
+    if (!pFaultyLine) {
+        return FAULT_UNTESTABLE;
+    }
+    // SET BACKTRACE FLAG
+    backtraceFlag = INITIAL;
 
-	while (!Finish)
-	{
-		if (!doImplication(implicationStatus, backwardImplicationLevel))
-		{
-			// implication INCONSISTENCY
-			// record the number of backtrack
-			if (backtrackDecisionTree_.lastNodeMarked())
-			{
-				++numOfBacktrack;
-			}
-			// Abort if numOfBacktrack reaching the BACKTRACK_LIMIT
-			if (numOfBacktrack > BACKTRACK_LIMIT)
-			{
-				genStatus = ABORT;
-				Finish = true;
-			}
+    while (!Finish) {
+        if (!doImplication(implicationStatus, backwardImplicationLevel)) {
+            // implication INCONSISTENCY
+            // record the number of backtrack
+            // 通过检查backtrackDecisionTree_是否为空来标记是否完成了一次backtrack，完成了则numOfBacktrack+1
+            if (backtrackDecisionTree_.lastNodeMarked()) {
+                ++numOfBacktrack;
+            }
+            // Abort if numOfBacktrack reaching the BACKTRACK_LIMIT
+            // 如果numOfBacktrack比限制值大了，中止生成过程
+            if (numOfBacktrack > BACKTRACK_LIMIT) {
+                genStatus = ABORT;
+                Finish = true;
+            }
 
-			clearAllEvents();
+            clearAllEvents();
 
-			// IS THERE AN UNTRIED COMBINATION OF VALUES ON ASSIGNED HEAD LINES OR FANOUT POINTS?
-			// If yes, SET UNTRIED COMBINATION OF VALUES in the function backtrack
-			if (backtrack(backwardImplicationLevel))
-			{
-				// backtrack success and initialize the data
-				// SET BACKTRACE FLAG
-				backtraceFlag = INITIAL;
-				implicationStatus = (backwardImplicationLevel > 0) ? BACKWARD : FORWARD;
-				pLastDFrontier = NULL;
-			}
-			else
-			{
-				// backtrack fail
-				// EXIT: FAULT_UNTESTABLE FAULT
-				genStatus = FAULT_UNTESTABLE;
-				Finish = true;
-			}
-			continue;
-		}
+            // IS THERE AN UNTRIED COMBINATION OF VALUES ON ASSIGNED HEAD LINES OR FANOUT POINTS?
+            // If yes, SET UNTRIED COMBINATION OF VALUES in the function backtrack
+            // 因为该情况被触发是因为蕴含后产生了冲突，如果还有未尝试的则继续根据算出的backwardImplicationLevel和implicationStatus回去调用doImplication函数进行蕴含，如果没有剩余的未尝试的组合了，则说明发生了无法解决的冲突，这个错误无法被检测到。backtrack函数的返回值用于判断是否还有未尝试的组合，即backtrackDecisionTree_是否为空
+            if (backtrack(backwardImplicationLevel)) {
+                // backtrack success and initialize the data
+                // SET BACKTRACE FLAG
+                backtraceFlag = INITIAL;
+                implicationStatus = (backwardImplicationLevel > 0) ? BACKWARD : FORWARD;
+                pLastDFrontier = NULL;
+            } else {
+                // backtrack fail
+                // EXIT: FAULT_UNTESTABLE FAULT
+                genStatus = FAULT_UNTESTABLE;
+                Finish = true;
+            }
+            continue;
+        }
 
-		// IS CONTINUATION OF BACKTRACE MEANINGFUL?
-		if (!continuationMeaningful(pLastDFrontier))
-		{
-			backtraceFlag = INITIAL;
-		}
+        // IS CONTINUATION OF BACKTRACE MEANINGFUL?
+        // 如果initialObjectives_为空（在遍历其中所有元素并检查其是否已经被回溯或者蕴含，若是则移除）或者pLastDFrontier的atpgVal_是否为X，两者存在一种则为false，即不需要继续backtrace
+        if (!continuationMeaningful(pLastDFrontier)) {
+            backtraceFlag = INITIAL;
+        }
 
-		// FAULT SIGNAL PROPAGATED TO A PRIMARY OUTPUT?
-		if (checkIfFaultHasPropagatedToPO(faultHasPropagatedToPO))
-		{
-			// IS THERE ANY UNJUSTIFIED BOUND LINE?
-			if (checkForUnjustifiedBoundLines())
-			{
-				// DETERMINE A FINAL OBJECTIVE TO ASSIGN A VALUE
-				findFinalObjective(backtraceFlag, faultHasPropagatedToPO, pLastDFrontier);
-				// ASSIGN A VALUE TO THE FINAL OBJECTIVE LINE
-				assignAtpgValToFinalObjectiveGates();
-				implicationStatus = FORWARD;
-				continue;
-			}
-			else
-			{
-				// Finding values on the primary inputs which justify all the values on the head lines
-				// LINE JUSTIFICATION OF FREE LINES
-				justifyFreeLines(targetFault);
-				// EXIT: TEST GENERATED
-				genStatus = PATTERN_FOUND;
-				Finish = true;
-			}
-		}
-		else
-		{
-			// not propagate to PO
-			// THE NUMBER OF GATES IN D-FRONTIER?
-			int numGatesInDFrontier = countEffectiveDFrontiers(pFaultyLine);
+        // FAULT SIGNAL PROPAGATED TO A PRIMARY OUTPUT?
+        // 判断是否把fault传到PO或者PPO上了（就是看PO或者PPO上有没有值为D/B的）
+        if (checkIfFaultHasPropagatedToPO(faultHasPropagatedToPO)) {
+            // IS THERE ANY UNJUSTIFIED BOUND LINE?
+            // 检查是否有unjustified的bound line
+            if (checkForUnjustifiedBoundLines()) {
+                // DETERMINE A FINAL OBJECTIVE TO ASSIGN A VALUE
+                // 后续会再看这个函数具体的方式，这个只是按照文章中的算法步骤来的
+                findFinalObjective(backtraceFlag, faultHasPropagatedToPO, pLastDFrontier);
+                // ASSIGN A VALUE TO THE FINAL OBJECTIVE LINE
+                // 把finalObjectives_中的所有门按照n0和n1的数量赋值为对应的H/L，然后把当前赋值的决策放入决策树中
+                assignAtpgValToFinalObjectiveGates();
+                // 因为给一个finalobjective赋值了，所以下一个循环应该直接从这里开始往后进行蕴含，检查是否存在冲突
+                implicationStatus = FORWARD;
+                continue;
+            } else {
+                // Finding values on the primary inputs which justify all the values on the head lines
+                // LINE JUSTIFICATION OF FREE LINES
+                justifyFreeLines(targetFault);
+                // EXIT: TEST GENERATED
+                genStatus = PATTERN_FOUND;
+                Finish = true;
+            }
+        } else {
+            // not propagate to PO
+            // THE NUMBER OF GATES IN D-FRONTIER?
+            // 该函数可能后续还要再看，关于为什么需要重置pFaultyLine之后的门的gateID_to_xPathStatus_为UNKNOWN，实质为更新DFrontiers后获取目前有用的DFrontier个数
+            int numGatesInDFrontier = countEffectiveDFrontiers(pFaultyLine);
 
-			// ZERO
-			if (numGatesInDFrontier == 0)
-			{
-				// no frontier can propagate to the PO
-				// record the number of backtrack
-				if (backtrackDecisionTree_.lastNodeMarked())
-				{
-					++numOfBacktrack;
-				}
-				// Abort if numOfBacktrack reaching the BACKTRACK_LIMIT
-				if (numOfBacktrack > BACKTRACK_LIMIT)
-				{
-					genStatus = ABORT;
-					Finish = true;
-				}
+            // ZERO
+            if (numGatesInDFrontier == 0) {
+                // no frontier can propagate to the PO
+                // record the number of backtrack
+                if (backtrackDecisionTree_.lastNodeMarked()) {
+                    ++numOfBacktrack;
+                }
+                // Abort if numOfBacktrack reaching the BACKTRACK_LIMIT
+                if (numOfBacktrack > BACKTRACK_LIMIT) {
+                    genStatus = ABORT;
+                    Finish = true;
+                }
 
-				clearAllEvents();
+                clearAllEvents();
 
-				// IS THERE AN UNTRIED COMBINATION OF VALUES ON ASSIGNED HEAD LINES OR FANOUT POINTS?
-				// If yes, SET UNTRIED COMBINATION OF VALUES in the function backtrack
-				if (backtrack(backwardImplicationLevel))
-				{
-					// backtrack success and initializeForSinglePatternGeneration the data
-					// SET BACKTRACE FLAG
-					backtraceFlag = INITIAL;
-					implicationStatus = (backwardImplicationLevel > 0) ? BACKWARD : FORWARD;
-					pLastDFrontier = NULL;
-				}
-				else
-				{
-					// backtrack fail
-					// EXIT: FAULT_UNTESTABLE FAULT
-					genStatus = FAULT_UNTESTABLE;
-					Finish = true;
-				}
-			}
-			else if (numGatesInDFrontier == 1)
-			{
-				// There exist just one path to the PO
-				// UNIQUE SENSITIZATION
-				backwardImplicationLevel = doUniquePathSensitization(pCircuit_->circuitGates_[dFrontiers_[0]]);
-				// Unique Sensitization fail
-				if (backwardImplicationLevel == UNIQUE_PATH_SENSITIZE_FAIL)
-				{
-					// If UNIQUE_PATH_SENSITIZE_FAIL, the number of gates in d-frontier in the next while loop
-					// and will backtrack
-					continue;
-				}
-				// Unique Sensitization success
-				if (backwardImplicationLevel > 0)
-				{
-					implicationStatus = BACKWARD;
-					continue;
-				}
-				else if (backwardImplicationLevel == 0)
-				{
-					continue;
-				}
-				else
-				{
-					// backwardImplicationLevel < 0, find an objective and set backtraceFlag and pLastDFrontier
-					findFinalObjective(backtraceFlag, faultHasPropagatedToPO, pLastDFrontier);
-					assignAtpgValToFinalObjectiveGates();
-					implicationStatus = FORWARD;
-					continue;
-				}
-			}
-			else
-			{ // more than one
-				// DETERMINE A FINAL OBJECTIVE TO ASSIGN A VALUE
-				findFinalObjective(backtraceFlag, faultHasPropagatedToPO, pLastDFrontier);
-				// ASSIGN A VALUE TO THE FINAL OBJECTIVE LINE
-				assignAtpgValToFinalObjectiveGates();
-				implicationStatus = FORWARD;
-				continue;
-			}
-		}
-	}
-	return genStatus;
+                // IS THERE AN UNTRIED COMBINATION OF VALUES ON ASSIGNED HEAD LINES OR FANOUT POINTS?
+                // If yes, SET UNTRIED COMBINATION OF VALUES in the function backtrack
+                if (backtrack(backwardImplicationLevel)) {
+                    // backtrack success and initializeForSinglePatternGeneration the data
+                    // SET BACKTRACE FLAG
+                    backtraceFlag = INITIAL;
+                    implicationStatus = (backwardImplicationLevel > 0) ? BACKWARD : FORWARD;
+                    pLastDFrontier = NULL;
+                } else {
+                    // backtrack fail
+                    // EXIT: FAULT_UNTESTABLE FAULT
+                    genStatus = FAULT_UNTESTABLE;
+                    Finish = true;
+                }
+            } else if (numGatesInDFrontier == 1) {
+                // There exist just one path to the PO
+                // UNIQUE SENSITIZATION
+                backwardImplicationLevel = doUniquePathSensitization(pCircuit_->circuitGates_[dFrontiers_[0]]);
+                // Unique Sensitization fail
+                if (backwardImplicationLevel == UNIQUE_PATH_SENSITIZE_FAIL) {
+                    // If UNIQUE_PATH_SENSITIZE_FAIL, the number of gates in d-frontier in the next while loop
+                    // and will backtrack
+                    continue;
+                }
+                // Unique Sensitization success
+                if (backwardImplicationLevel > 0) {
+                    implicationStatus = BACKWARD;
+                    continue;
+                } else if (backwardImplicationLevel == 0) {
+                    continue;
+                } else {
+                    // backwardImplicationLevel < 0, find an objective and set backtraceFlag and pLastDFrontier
+                    findFinalObjective(backtraceFlag, faultHasPropagatedToPO, pLastDFrontier);
+                    assignAtpgValToFinalObjectiveGates();
+                    implicationStatus = FORWARD;
+                    continue;
+                }
+            } else {  // more than one
+                // DETERMINE A FINAL OBJECTIVE TO ASSIGN A VALUE
+                findFinalObjective(backtraceFlag, faultHasPropagatedToPO, pLastDFrontier);
+                // ASSIGN A VALUE TO THE FINAL OBJECTIVE LINE
+                assignAtpgValToFinalObjectiveGates();
+                implicationStatus = FORWARD;
+                continue;
+            }
+        }
+    }
+    return genStatus;
 }
 
 // **************************************************************************
@@ -1212,77 +1084,68 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 //            ]
 // Date       [ last modified 2023/01/05 ]
 // **************************************************************************
-Gate *Atpg::initializeForSinglePatternGeneration(Fault &targetFault, int &backwardImplicationLevel, IMPLICATION_STATUS &implicationStatus, const bool &isAtStageDTC)
-{
-	Gate *gFaultyLine = &pCircuit_->circuitGates_[targetFault.gateID_];
-	currentTargetFault_ = targetFault;
+Gate* Atpg::initializeForSinglePatternGeneration(Fault& targetFault, int& backwardImplicationLevel, IMPLICATION_STATUS& implicationStatus, const bool& isAtStageDTC) {
+    Gate* gFaultyLine = &pCircuit_->circuitGates_[targetFault.gateID_];
+    currentTargetFault_ = targetFault;
 
-	// if targetFault at gate's input, change the gFaultyLine to the input gate
-	if (targetFault.faultyLine_ != 0)
-	{
-		gFaultyLine = &pCircuit_->circuitGates_[gFaultyLine->faninVector_[targetFault.faultyLine_ - 1]];
-	}
-	initializeObjectivesAndFrontiers();
-	initializeCircuitWithFaultyGate(*gFaultyLine, isAtStageDTC);
-	int fGate_id = targetFault.gateID_;
-	// currentTargetHeadLineFault_.gateID_ = -1; //bug report
-	if (gateID_to_lineType_[gFaultyLine->gateId_] == FREE_LINE)
-	{
-		if ((targetFault.faultType_ == Fault::SA0 || targetFault.faultType_ == Fault::STR) && gFaultyLine->atpgVal_ != L)
-		{
-			gFaultyLine->atpgVal_ = D;
-		}
-		if ((targetFault.faultType_ == Fault::SA1 || targetFault.faultType_ == Fault::STF) && gFaultyLine->atpgVal_ != H)
-		{
-			gFaultyLine->atpgVal_ = B;
-		}
-		backtrackImplicatedGateIDs_.push_back(gFaultyLine->gateId_);
+    // if targetFault at gate's input, change the gFaultyLine to the input gate
+    if (targetFault.faultyLine_ != 0) {
+        gFaultyLine = &pCircuit_->circuitGates_[gFaultyLine->faninVector_[targetFault.faultyLine_ - 1]];  // gFaultyLine是当前targetFault真正的有故障的线（门）
+    }
+    initializeObjectivesAndFrontiers();
+    initializeCircuitWithFaultyGate(*gFaultyLine, isAtStageDTC);
+    int fGate_id = targetFault.gateID_;
 
-		currentTargetHeadLineFault_ = setFreeLineFaultyGate(*gFaultyLine);
-		currentTargetFault_ = currentTargetHeadLineFault_;
-		backwardImplicationLevel = 0;
-		implicationStatus = FORWARD;
-		fGate_id = currentTargetHeadLineFault_.gateID_;
-	}
-	else
-	{
-		backwardImplicationLevel = setFaultyGate(targetFault);
-	}
+    // currentTargetHeadLineFault_.gateID_ = -1; //bug report
+    if (gateID_to_lineType_[gFaultyLine->gateId_] == FREE_LINE) {
+        // 按targetFault的fault类型设置gFaultyLine的atpgVal_
+        if ((targetFault.faultType_ == Fault::SA0 || targetFault.faultType_ == Fault::STR) && gFaultyLine->atpgVal_ != L) {
+            gFaultyLine->atpgVal_ = D;
+        }
+        if ((targetFault.faultType_ == Fault::SA1 || targetFault.faultType_ == Fault::STF) && gFaultyLine->atpgVal_ != H) {
+            gFaultyLine->atpgVal_ = B;
+        }
+        backtrackImplicatedGateIDs_.push_back(gFaultyLine->gateId_);
 
-	if (backwardImplicationLevel < 0)
-	{
-		return NULL;
-	}
+        // 对gFaultyLine调用setFreeLineFaultyGate函数找到gFaultyLine扇出中的headline，并在路径上将遍历到的线设置为非控制值（即找到gFaultyLine等效到headline上的故障）
+        currentTargetHeadLineFault_ = setFreeLineFaultyGate(*gFaultyLine);
+        currentTargetFault_ = currentTargetHeadLineFault_;
+        backwardImplicationLevel = 0;
+        implicationStatus = FORWARD;  // 等效到headline后不需要往回implication
+        fGate_id = currentTargetHeadLineFault_.gateID_;
+    } else {
+        backwardImplicationLevel = setFaultyGate(targetFault);  // backwardImplicationLevel为targetFault指向的门的扇入中的最大level
+    }
 
-	dFrontiers_.push_back(fGate_id);
+    if (backwardImplicationLevel < 0) {
+        return NULL;
+    }
 
-	int Level = doUniquePathSensitization(pCircuit_->circuitGates_[fGate_id]);
-	if (Level == UNIQUE_PATH_SENSITIZE_FAIL)
-	{
-		return NULL;
-	}
+    dFrontiers_.push_back(fGate_id);
 
-	if (Level > backwardImplicationLevel)
-	{
-		backwardImplicationLevel = Level;
-		implicationStatus = BACKWARD;
-	}
+    // 对fGate_id指向的门进行通路敏化，应该是用于保证fGate_id上的fault可以传到output，Level为fGate的UniquePath中最后一个门的扇入的最大level
+    int Level = doUniquePathSensitization(pCircuit_->circuitGates_[fGate_id]);
+    if (Level == UNIQUE_PATH_SENSITIZE_FAIL) {
+        return NULL;
+    }
 
-	if (targetFault.faultType_ == Fault::STR || targetFault.faultType_ == Fault::STF)
-	{
-		Level = setUpFirstTimeFrame(targetFault);
-		if (Level < 0)
-		{
-			return NULL;
-		}
+    if (Level > backwardImplicationLevel) {
+        backwardImplicationLevel = Level;
+        implicationStatus = BACKWARD;
+    }
 
-		if (Level > backwardImplicationLevel)
-		{
-			backwardImplicationLevel = Level;
-			implicationStatus = BACKWARD;
-		}
-	}
-	return &pCircuit_->circuitGates_[fGate_id];
+    if (targetFault.faultType_ == Fault::STR || targetFault.faultType_ == Fault::STF) {
+        Level = setUpFirstTimeFrame(targetFault);
+        if (Level < 0) {
+            return NULL;
+        }
+
+        if (Level > backwardImplicationLevel) {
+            backwardImplicationLevel = Level;
+            implicationStatus = BACKWARD;
+        }
+    }
+    return &pCircuit_->circuitGates_[fGate_id];
 }
 
 // **************************************************************************
@@ -1294,28 +1157,27 @@ Gate *Atpg::initializeForSinglePatternGeneration(Fault &targetFault, int &backwa
 //            ]
 // Date       [ last modified 2023/01/06 ]
 // **************************************************************************
-void Atpg::initializeObjectivesAndFrontiers()
-{
-	initialObjectives_.clear();
-	currentObjectives_.clear();
-	fanoutObjectives_.clear();
-	headLineObjectives_.clear();
-	finalObjectives_.clear();
-	initialObjectives_.reserve(MAX_LIST_SIZE);
-	currentObjectives_.reserve(MAX_LIST_SIZE);
-	fanoutObjectives_.reserve(MAX_LIST_SIZE);
-	headLineObjectives_.reserve(MAX_LIST_SIZE);
-	finalObjectives_.reserve(MAX_LIST_SIZE);
+void Atpg::initializeObjectivesAndFrontiers() {
+    initialObjectives_.clear();
+    currentObjectives_.clear();
+    fanoutObjectives_.clear();
+    headLineObjectives_.clear();
+    finalObjectives_.clear();
+    initialObjectives_.reserve(MAX_LIST_SIZE);
+    currentObjectives_.reserve(MAX_LIST_SIZE);
+    fanoutObjectives_.reserve(MAX_LIST_SIZE);
+    headLineObjectives_.reserve(MAX_LIST_SIZE);
+    finalObjectives_.reserve(MAX_LIST_SIZE);
 
-	unjustifiedGateIDs_.clear();
-	dFrontiers_.clear();
-	backtrackImplicatedGateIDs_.clear();
-	backtrackDecisionTree_.clear();
-	currentTargetHeadLineFault_ = Fault(); // NE
-	firstTimeFrameHeadLine_ = NULL;
-	unjustifiedGateIDs_.reserve(MAX_LIST_SIZE);
-	dFrontiers_.reserve(MAX_LIST_SIZE);
-	backtrackImplicatedGateIDs_.reserve(pCircuit_->totalGate_);
+    unjustifiedGateIDs_.clear();
+    dFrontiers_.clear();
+    backtrackImplicatedGateIDs_.clear();
+    backtrackDecisionTree_.clear();
+    currentTargetHeadLineFault_ = Fault();  // NE
+    firstTimeFrameHeadLine_ = NULL;
+    unjustifiedGateIDs_.reserve(MAX_LIST_SIZE);
+    dFrontiers_.reserve(MAX_LIST_SIZE);
+    backtrackImplicatedGateIDs_.reserve(pCircuit_->totalGate_);
 }
 
 // **************************************************************************
@@ -1352,46 +1214,37 @@ void Atpg::initializeObjectivesAndFrontiers()
 //            ]
 // Date       [ last modified 2023/01/06 ]
 // **************************************************************************
-void Atpg::initializeCircuitWithFaultyGate(Gate &gFaultyLine, bool isAtStageDTC)
-{
-	for (Gate &gate : pCircuit_->circuitGates_)
-	{
-		if (gateID_to_lineType_[gate.gateId_] == FREE_LINE)
-		{
-			gateID_to_valModified_[gate.gateId_] = 1;
-		}
-		else
-		{
-			gateID_to_valModified_[gate.gateId_] = 0;
-		}
-		gateID_to_reachableByTargetFault_[gate.gateId_] = 0;
+void Atpg::initializeCircuitWithFaultyGate(Gate& gFaultyLine, bool isAtStageDTC) {
+    for (Gate& gate : pCircuit_->circuitGates_) {
+        if (gateID_to_lineType_[gate.gateId_] == FREE_LINE) {
+            gateID_to_valModified_[gate.gateId_] = 1;
+        } else {
+            gateID_to_valModified_[gate.gateId_] = 0;
+        }
+        gateID_to_reachableByTargetFault_[gate.gateId_] = 0;
 
-		// assign value outside the generateSinglePatternOnTargetFault for DTC, so
-		// only need to initializeForSinglePatternGeneration it for primary fault.
-		if (!isAtStageDTC)
-		{
-			gate.atpgVal_ = X;
-		}
-		gateID_to_xPathStatus_[gate.gateId_] = UNKNOWN;
-	}
+        // assign value outside the generateSinglePatternOnTargetFault for DTC, so
+        // only need to initializeForSinglePatternGeneration it for primary fault.
+        if (!isAtStageDTC) {
+            gate.atpgVal_ = X;
+        }
+        gateID_to_xPathStatus_[gate.gateId_] = UNKNOWN;
+    }
 
-	pushGateToEventStack(gFaultyLine.gateId_);
+    pushGateToEventStack(gFaultyLine.gateId_);
 
-	for (int i = gFaultyLine.numLevel_; i < pCircuit_->totalLvl_; ++i)
-	{
-		while (!circuitLevel_to_EventStack_[i].empty())
-		{
-			int gateID = popEventStack(i);
-			const Gate &rCurrentGate = pCircuit_->circuitGates_[gateID];
-			gateID_to_valModified_[gateID] = 0;
-			gateID_to_reachableByTargetFault_[gateID] = 1;
+    for (int i = gFaultyLine.numLevel_; i < pCircuit_->totalLvl_; ++i) {
+        while (!circuitLevel_to_EventStack_[i].empty()) {
+            int gateID = popEventStack(i);
+            const Gate& rCurrentGate = pCircuit_->circuitGates_[gateID];
+            gateID_to_valModified_[gateID] = 0;
+            gateID_to_reachableByTargetFault_[gateID] = 1;
 
-			for (int fanoutID : rCurrentGate.fanoutVector_)
-			{
-				pushGateToEventStack(fanoutID);
-			}
-		}
-	}
+            for (int fanoutID : rCurrentGate.fanoutVector_) {
+                pushGateToEventStack(fanoutID);
+            }
+        }
+    }
 }
 
 // **************************************************************************
@@ -1408,35 +1261,28 @@ void Atpg::initializeCircuitWithFaultyGate(Gate &gFaultyLine, bool isAtStageDTC)
 //            ]
 // Date       [ started 2020/07/07    last modified 2023/01/06 ]
 // **************************************************************************
-void Atpg::clearEventStack(bool isDebug)
-{
+void Atpg::clearEventStack(bool isDebug) {
+    // pop and remove mark
+    for (std::stack<int>& eventStack : circuitLevel_to_EventStack_) {
+        while (!eventStack.empty()) {
+            int gateID = eventStack.top();
+            eventStack.pop();
+            gateID_to_valModified_[gateID] = 0;
+            isInEventStack_[gateID] = 0;
+        }
+    }
 
-	// pop and remove mark
-	for (std::stack<int> &eventStack : circuitLevel_to_EventStack_)
-	{
-		while (!eventStack.empty())
-		{
-			int gateID = eventStack.top();
-			eventStack.pop();
-			gateID_to_valModified_[gateID] = 0;
-			isInEventStack_[gateID] = 0;
-		}
-	}
-
-	// expect all gates in circuit must be unmarked
-	// after the above for-loop.
-	if (isDebug)
-	{
-		for (int i = 0; i < pCircuit_->totalGate_; ++i)
-		{
-			if (isInEventStack_[i])
-			{
-				std::cerr << "Bug: Warning clearEventStack found unexpected behavior\n";
-				isInEventStack_[i] = 0;
-				std::cin.get();
-			}
-		}
-	}
+    // expect all gates in circuit must be unmarked
+    // after the above for-loop.
+    if (isDebug) {
+        for (int i = 0; i < pCircuit_->totalGate_; ++i) {
+            if (isInEventStack_[i]) {
+                std::cerr << "Bug: Warning clearEventStack found unexpected behavior\n";
+                isInEventStack_[i] = 0;
+                std::cin.get();
+            }
+        }
+    }
 }
 
 // **************************************************************************
@@ -1478,65 +1324,52 @@ void Atpg::clearEventStack(bool isDebug)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 2023/01/06 ]
 // **************************************************************************
-bool Atpg::doImplication(IMPLICATION_STATUS atpgStatus, int startLevel)
-{
-	IMPLICATION_STATUS impRet;
+bool Atpg::doImplication(IMPLICATION_STATUS atpgStatus, int startLevel) {
+    IMPLICATION_STATUS impRet;
 
-	if (atpgStatus != BACKWARD)
-	{
-		startLevel = 0;
-	}
+    if (atpgStatus != BACKWARD) {
+        startLevel = 0;
+    }
 
-	do
-	{
-		if (atpgStatus == BACKWARD)
-		{
-			// BACKWARD loop: Do evaluateAndSetGateAtpgVal() to gates in circuitLevel_to_EventStack_ in BACKWARD order from startLevel.
-			// If one of them returns CONFLICT, doImplication() returns false.
-			for (int i = startLevel; i >= 0; --i)
-			{
-				while (!circuitLevel_to_EventStack_[i].empty())
-				{
-					Gate *pGate = &pCircuit_->circuitGates_[popEventStack(i)];
-					impRet = evaluateAndSetGateAtpgVal(pGate);
-					if (impRet == CONFLICT)
-					{
-						return false;
-					}
-				}
-			}
-		}
+    do {
+        if (atpgStatus == BACKWARD) {
+            // BACKWARD loop: Do evaluateAndSetGateAtpgVal() to gates in circuitLevel_to_EventStack_ in BACKWARD order from startLevel.
+            // If one of them returns CONFLICT, doImplication() returns false.
+            for (int i = startLevel; i >= 0; --i) {
+                while (!circuitLevel_to_EventStack_[i].empty()) {
+                    Gate* pGate = &pCircuit_->circuitGates_[popEventStack(i)];
+                    impRet = evaluateAndSetGateAtpgVal(pGate);
+                    if (impRet == CONFLICT) {
+                        return false;
+                    }
+                }
+            }
+        }
 
-		atpgStatus = FORWARD;
-		for (int i = 0; i < pCircuit_->totalLvl_; ++i)
-		{
-			// FORWARD loop: Do evaluateAndSetGateAtpgVal() to gates in circuitLevel_to_EventStack_ in FORWARD order till it gets to MaxLevel.
-			// If one of them returns CONFLICT, doImplication() returns false.
-			// If one of them returns BACKWARD, set startLevel to current level - 1, break for loop
-			while (!circuitLevel_to_EventStack_[i].empty())
-			{
-				Gate *pGate = &pCircuit_->circuitGates_[popEventStack(i)];
-				impRet = evaluateAndSetGateAtpgVal(pGate);
-				if (impRet == CONFLICT)
-				{
-					return false;
-				}
-				else if (impRet == BACKWARD)
-				{
-					startLevel = i - 1;
-					atpgStatus = BACKWARD;
-					break;
-				}
-			}
+        atpgStatus = FORWARD;
+        for (int i = 0; i < pCircuit_->totalLvl_; ++i) {
+            // FORWARD loop: Do evaluateAndSetGateAtpgVal() to gates in circuitLevel_to_EventStack_ in FORWARD order till it gets to MaxLevel.
+            // If one of them returns CONFLICT, doImplication() returns false.
+            // If one of them returns BACKWARD, set startLevel to current level - 1, break for loop
+            while (!circuitLevel_to_EventStack_[i].empty()) {
+                Gate* pGate = &pCircuit_->circuitGates_[popEventStack(i)];
+                impRet = evaluateAndSetGateAtpgVal(pGate);
+                if (impRet == CONFLICT) {
+                    return false;
+                } else if (impRet == BACKWARD) {
+                    startLevel = i - 1;
+                    atpgStatus = BACKWARD;
+                    break;
+                }
+            }
 
-			if (atpgStatus == BACKWARD)
-			{
-				break;
-			}
-		}
-	} while (atpgStatus == BACKWARD);
+            if (atpgStatus == BACKWARD) {
+                break;
+            }
+        }
+    } while (atpgStatus == BACKWARD);
 
-	return true;
+    return true;
 }
 
 // **************************************************************************
@@ -1566,181 +1399,139 @@ bool Atpg::doImplication(IMPLICATION_STATUS atpgStatus, int startLevel)
 //            ]
 // Date       [ last modified 2023/01/06 ]
 // **************************************************************************
-Atpg::IMPLICATION_STATUS Atpg::doOneGateBackwardImplication(Gate *pGate)
-{
-	IMPLICATION_STATUS implicationStatus = FORWARD;
-	if (pGate->gateType_ == Gate::PI || pGate->gateType_ == Gate::PPI)
-	{
-		return FORWARD;
-	}
+Atpg::IMPLICATION_STATUS Atpg::doOneGateBackwardImplication(Gate* pGate) {
+    IMPLICATION_STATUS implicationStatus = FORWARD;
+    if (pGate->gateType_ == Gate::PI || pGate->gateType_ == Gate::PPI) {
+        return FORWARD;
+    }
 
-	if (pGate->gateType_ == Gate::BUF || pGate->gateType_ == Gate::INV || pGate->gateType_ == Gate::PO || pGate->gateType_ == Gate::PPO)
-	{
-		Gate *pImpGate = &pCircuit_->circuitGates_[pGate->faninVector_[0]];
-		gateID_to_valModified_[pGate->gateId_] = 1;
+    if (pGate->gateType_ == Gate::BUF || pGate->gateType_ == Gate::INV || pGate->gateType_ == Gate::PO || pGate->gateType_ == Gate::PPO) {
+        Gate* pImpGate = &pCircuit_->circuitGates_[pGate->faninVector_[0]];
+        gateID_to_valModified_[pGate->gateId_] = 1;
 
-		Value isINV = pGate->gateType_ == Gate::INV ? H : L;
-		pImpGate->atpgVal_ = cXOR2(pGate->atpgVal_, isINV);
+        Value isINV = pGate->gateType_ == Gate::INV ? H : L;
+        pImpGate->atpgVal_ = cXOR2(pGate->atpgVal_, isINV);
 
-		backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
-		pushGateToEventStack(pGate->faninVector_[0]);
-		pushGateFanoutsToEventStack(pGate->faninVector_[0]);
-		implicationStatus = BACKWARD;
-	}
-	else if (pGate->gateType_ == Gate::XOR2 || pGate->gateType_ == Gate::XNOR2)
-	{
-		Gate *pInputGate0 = &pCircuit_->circuitGates_[pGate->faninVector_[0]];
-		Gate *pInputGate1 = &pCircuit_->circuitGates_[pGate->faninVector_[1]];
+        backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
+        pushGateToEventStack(pGate->faninVector_[0]);
+        pushGateFanoutsToEventStack(pGate->faninVector_[0]);
+        implicationStatus = BACKWARD;
+    } else if (pGate->gateType_ == Gate::XOR2 || pGate->gateType_ == Gate::XNOR2) {
+        Gate* pInputGate0 = &pCircuit_->circuitGates_[pGate->faninVector_[0]];
+        Gate* pInputGate1 = &pCircuit_->circuitGates_[pGate->faninVector_[1]];
 
-		implicationStatus = BACKWARD;
+        implicationStatus = BACKWARD;
 
-		if (pInputGate0->atpgVal_ == X && pInputGate1->atpgVal_ != X)
-		{
-			if (pGate->gateType_ == Gate::XOR2)
-			{
-				pInputGate0->atpgVal_ = cXOR2(pGate->atpgVal_, pInputGate1->atpgVal_);
-			}
-			else
-			{
-				pInputGate0->atpgVal_ = cXNOR2(pGate->atpgVal_, pInputGate1->atpgVal_);
-			}
-			gateID_to_valModified_[pGate->gateId_] = 1;
-			backtrackImplicatedGateIDs_.push_back(pInputGate0->gateId_);
-			pushGateToEventStack(pGate->faninVector_[0]);
-			pushGateFanoutsToEventStack(pGate->faninVector_[0]);
-		}
-		else if (pInputGate1->atpgVal_ == X && pInputGate0->atpgVal_ != X)
-		{
-			if (pGate->gateType_ == Gate::XOR2)
-			{
-				pInputGate1->atpgVal_ = cXOR2(pGate->atpgVal_, pInputGate0->atpgVal_);
-			}
-			else
-			{
-				pInputGate1->atpgVal_ = cXNOR2(pGate->atpgVal_, pInputGate0->atpgVal_);
-			}
-			gateID_to_valModified_[pGate->gateId_] = 1;
-			backtrackImplicatedGateIDs_.push_back(pInputGate1->gateId_);
-			pushGateToEventStack(pGate->faninVector_[1]);
-			pushGateFanoutsToEventStack(pGate->faninVector_[1]);
-		}
-		else
-		{
-			implicationStatus = FORWARD;
-			unjustifiedGateIDs_.push_back(pGate->gateId_);
-		}
-	}
-	else if (pGate->gateType_ == Gate::XOR3 || pGate->gateType_ == Gate::XNOR3)
-	{
-		Gate *pInputGate0 = &pCircuit_->circuitGates_[pGate->faninVector_[0]];
-		Gate *pInputGate1 = &pCircuit_->circuitGates_[pGate->faninVector_[1]];
-		Gate *pInputGate2 = &pCircuit_->circuitGates_[pGate->faninVector_[2]];
-		unsigned NumOfX = 0;
-		unsigned ImpPtr = 0;
-		if (pInputGate0->atpgVal_ == X)
-		{
-			++NumOfX;
-			ImpPtr = 0;
-		}
-		if (pInputGate1->atpgVal_ == X)
-		{
-			++NumOfX;
-			ImpPtr = 1;
-		}
-		if (pInputGate2->atpgVal_ == X)
-		{
-			++NumOfX;
-			ImpPtr = 2;
-		}
-		if (NumOfX == 1)
-		{
-			Gate *pImpGate = &pCircuit_->circuitGates_[pGate->faninVector_[ImpPtr]];
-			Value temp;
-			if (ImpPtr == 0)
-			{
-				temp = cXOR3(pGate->atpgVal_, pInputGate1->atpgVal_, pInputGate2->atpgVal_);
-			}
-			else if (ImpPtr == 1)
-			{
-				temp = cXOR3(pGate->atpgVal_, pInputGate0->atpgVal_, pInputGate2->atpgVal_);
-			}
-			else
-			{
-				temp = cXOR3(pGate->atpgVal_, pInputGate1->atpgVal_, pInputGate0->atpgVal_);
-			}
+        if (pInputGate0->atpgVal_ == X && pInputGate1->atpgVal_ != X) {
+            if (pGate->gateType_ == Gate::XOR2) {
+                pInputGate0->atpgVal_ = cXOR2(pGate->atpgVal_, pInputGate1->atpgVal_);
+            } else {
+                pInputGate0->atpgVal_ = cXNOR2(pGate->atpgVal_, pInputGate1->atpgVal_);
+            }
+            gateID_to_valModified_[pGate->gateId_] = 1;
+            backtrackImplicatedGateIDs_.push_back(pInputGate0->gateId_);
+            pushGateToEventStack(pGate->faninVector_[0]);
+            pushGateFanoutsToEventStack(pGate->faninVector_[0]);
+        } else if (pInputGate1->atpgVal_ == X && pInputGate0->atpgVal_ != X) {
+            if (pGate->gateType_ == Gate::XOR2) {
+                pInputGate1->atpgVal_ = cXOR2(pGate->atpgVal_, pInputGate0->atpgVal_);
+            } else {
+                pInputGate1->atpgVal_ = cXNOR2(pGate->atpgVal_, pInputGate0->atpgVal_);
+            }
+            gateID_to_valModified_[pGate->gateId_] = 1;
+            backtrackImplicatedGateIDs_.push_back(pInputGate1->gateId_);
+            pushGateToEventStack(pGate->faninVector_[1]);
+            pushGateFanoutsToEventStack(pGate->faninVector_[1]);
+        } else {
+            implicationStatus = FORWARD;
+            unjustifiedGateIDs_.push_back(pGate->gateId_);
+        }
+    } else if (pGate->gateType_ == Gate::XOR3 || pGate->gateType_ == Gate::XNOR3) {
+        Gate* pInputGate0 = &pCircuit_->circuitGates_[pGate->faninVector_[0]];
+        Gate* pInputGate1 = &pCircuit_->circuitGates_[pGate->faninVector_[1]];
+        Gate* pInputGate2 = &pCircuit_->circuitGates_[pGate->faninVector_[2]];
+        unsigned NumOfX = 0;
+        unsigned ImpPtr = 0;
+        if (pInputGate0->atpgVal_ == X) {
+            ++NumOfX;
+            ImpPtr = 0;
+        }
+        if (pInputGate1->atpgVal_ == X) {
+            ++NumOfX;
+            ImpPtr = 1;
+        }
+        if (pInputGate2->atpgVal_ == X) {
+            ++NumOfX;
+            ImpPtr = 2;
+        }
+        if (NumOfX == 1) {
+            Gate* pImpGate = &pCircuit_->circuitGates_[pGate->faninVector_[ImpPtr]];
+            Value temp;
+            if (ImpPtr == 0) {
+                temp = cXOR3(pGate->atpgVal_, pInputGate1->atpgVal_, pInputGate2->atpgVal_);
+            } else if (ImpPtr == 1) {
+                temp = cXOR3(pGate->atpgVal_, pInputGate0->atpgVal_, pInputGate2->atpgVal_);
+            } else {
+                temp = cXOR3(pGate->atpgVal_, pInputGate1->atpgVal_, pInputGate0->atpgVal_);
+            }
 
-			if (pGate->gateType_ == Gate::XNOR3)
-			{
-				temp = cINV(temp);
-			}
-			pImpGate->atpgVal_ = temp;
-			gateID_to_valModified_[pGate->gateId_] = 1;
-			backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
-			pushGateToEventStack(pGate->faninVector_[ImpPtr]);
-			pushGateFanoutsToEventStack(pGate->faninVector_[ImpPtr]);
-			implicationStatus = BACKWARD;
-		}
-		else
-		{
-			unjustifiedGateIDs_.push_back(pGate->gateId_);
-			implicationStatus = FORWARD;
-		}
-	}
-	else
-	{
-		Value OutputControlVal = pGate->getOutputCtrlValue();
-		Value InputControlVal = pGate->getInputCtrlValue();
+            if (pGate->gateType_ == Gate::XNOR3) {
+                temp = cINV(temp);
+            }
+            pImpGate->atpgVal_ = temp;
+            gateID_to_valModified_[pGate->gateId_] = 1;
+            backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
+            pushGateToEventStack(pGate->faninVector_[ImpPtr]);
+            pushGateFanoutsToEventStack(pGate->faninVector_[ImpPtr]);
+            implicationStatus = BACKWARD;
+        } else {
+            unjustifiedGateIDs_.push_back(pGate->gateId_);
+            implicationStatus = FORWARD;
+        }
+    } else {
+        Value OutputControlVal = pGate->getOutputCtrlValue();
+        Value InputControlVal = pGate->getInputCtrlValue();
 
-		if (pGate->atpgVal_ == OutputControlVal)
-		{
-			gateID_to_valModified_[pGate->gateId_] = 1;
-			Value InputNonControlVal = pGate->getInputNonCtrlValue();
+        if (pGate->atpgVal_ == OutputControlVal) {
+            gateID_to_valModified_[pGate->gateId_] = 1;
+            Value InputNonControlVal = pGate->getInputNonCtrlValue();
 
-			for (int i = 0; i < pGate->numFI_; ++i)
-			{
-				Gate *pFaninGate = &pCircuit_->circuitGates_[pGate->faninVector_[i]];
-				if (pFaninGate->atpgVal_ == X)
-				{
-					pFaninGate->atpgVal_ = InputNonControlVal;
-					backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
-					pushGateToEventStack(pGate->faninVector_[i]);
-					pushGateFanoutsToEventStack(pGate->faninVector_[i]);
-				}
-			}
-			implicationStatus = BACKWARD;
-		}
-		else
-		{
-			int NumOfX = 0;
-			int ImpPtr = 0;
-			for (int i = 0; i < pGate->numFI_; ++i)
-			{
-				Gate *pFaninGate = &pCircuit_->circuitGates_[pGate->faninVector_[i]];
-				if (pFaninGate->atpgVal_ == X)
-				{
-					++NumOfX;
-					ImpPtr = i;
-				}
-			}
+            for (int i = 0; i < pGate->numFI_; ++i) {
+                Gate* pFaninGate = &pCircuit_->circuitGates_[pGate->faninVector_[i]];
+                if (pFaninGate->atpgVal_ == X) {
+                    pFaninGate->atpgVal_ = InputNonControlVal;
+                    backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
+                    pushGateToEventStack(pGate->faninVector_[i]);
+                    pushGateFanoutsToEventStack(pGate->faninVector_[i]);
+                }
+            }
+            implicationStatus = BACKWARD;
+        } else {
+            int NumOfX = 0;
+            int ImpPtr = 0;
+            for (int i = 0; i < pGate->numFI_; ++i) {
+                Gate* pFaninGate = &pCircuit_->circuitGates_[pGate->faninVector_[i]];
+                if (pFaninGate->atpgVal_ == X) {
+                    ++NumOfX;
+                    ImpPtr = i;
+                }
+            }
 
-			if (NumOfX == 1)
-			{
-				Gate *pImpGate = &pCircuit_->circuitGates_[pGate->faninVector_[ImpPtr]];
-				pImpGate->atpgVal_ = InputControlVal;
-				gateID_to_valModified_[pGate->gateId_] = 1;
-				backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
-				pushGateToEventStack(pGate->faninVector_[ImpPtr]);
-				pushGateFanoutsToEventStack(pGate->faninVector_[ImpPtr]);
-				implicationStatus = BACKWARD;
-			}
-			else
-			{
-				unjustifiedGateIDs_.push_back(pGate->gateId_);
-				implicationStatus = FORWARD;
-			}
-		}
-	}
-	return implicationStatus;
+            if (NumOfX == 1) {
+                Gate* pImpGate = &pCircuit_->circuitGates_[pGate->faninVector_[ImpPtr]];
+                pImpGate->atpgVal_ = InputControlVal;
+                gateID_to_valModified_[pGate->gateId_] = 1;
+                backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
+                pushGateToEventStack(pGate->faninVector_[ImpPtr]);
+                pushGateFanoutsToEventStack(pGate->faninVector_[ImpPtr]);
+                implicationStatus = BACKWARD;
+            } else {
+                unjustifiedGateIDs_.push_back(pGate->gateId_);
+                implicationStatus = FORWARD;
+            }
+        }
+    }
+    return implicationStatus;
 }
 
 // **************************************************************************
@@ -1802,102 +1593,90 @@ Atpg::IMPLICATION_STATUS Atpg::doOneGateBackwardImplication(Gate *pGate)
 // associated implications of G0=1         associated implications of G1=0
 //
 // **************************************************************************
-bool Atpg::backtrack(int &backwardImplicationLevel)
-{
-	int backtrackPoint = 0;
-	int mDecisionGateID;
-	Value Val;
-	Gate *pDecisionGate = NULL;
-	// backtrackImplicatedGateIDs_ is for backtrack
+bool Atpg::backtrack(int& backwardImplicationLevel) {
+    int backtrackPoint = 0;
+    int mDecisionGateID;
+    Value Val;
+    Gate* pDecisionGate = NULL;
+    // backtrackImplicatedGateIDs_ is for backtrack
 
-	while (!backtrackDecisionTree_.empty())
-	{
-		// get the last node in backtrackDecisionTree_ as backtrackPoint
-		if (backtrackDecisionTree_.get(mDecisionGateID, backtrackPoint))
-		{
-			continue;
-		}
-		// pDecisionGate is the bottom node of backtrackDecisionTree_
+    while (!backtrackDecisionTree_.empty()) {
+        // get the last node in backtrackDecisionTree_ as backtrackPoint
+        // 找到没有被标记过的决策树的节点，该节点的gateID赋值给mDecisionGateID，该节点在backtrackList中的位置赋值给backtrackPoint
+        if (backtrackDecisionTree_.get(mDecisionGateID, backtrackPoint)) {
+            continue;
+        }
+        // pDecisionGate is the bottom node of backtrackDecisionTree_
 
-		updateUnjustifiedGateIDs();
-		pDecisionGate = &pCircuit_->circuitGates_[mDecisionGateID];
-		Val = cINV(pDecisionGate->atpgVal_);
+        updateUnjustifiedGateIDs();
+        pDecisionGate = &pCircuit_->circuitGates_[mDecisionGateID];  // mDecisionGateID指向的门
+        Val = cINV(pDecisionGate->atpgVal_);
 
-		for (int i = backtrackPoint; i < (int)backtrackImplicatedGateIDs_.size(); ++i)
-		{
-			// Reset gates and their ouput in backtrackImplicatedGateIDs_, starts from its backtrack point.
-			Gate *pGate = &pCircuit_->circuitGates_[backtrackImplicatedGateIDs_[i]];
+        // 从backtrackPoint开始往后遍历backtrackImplicatedGateIDs_，重置所有门的atpgVal_，将所有门的状态重置为没有被回溯且蕴含
+        for (int i = backtrackPoint; i < (int)backtrackImplicatedGateIDs_.size(); ++i) {
+            // Reset gates and their ouput in backtrackImplicatedGateIDs_, starts from its backtrack point.
+            Gate* pGate = &pCircuit_->circuitGates_[backtrackImplicatedGateIDs_[i]];
 
-			pGate->atpgVal_ = X;
-			gateID_to_valModified_[pGate->gateId_] = 0;
+            pGate->atpgVal_ = X;
+            gateID_to_valModified_[pGate->gateId_] = 0;
 
-			for (int j = 0; j < pGate->numFO_; ++j)
-			{
-				Gate *pFanoutGate = &pCircuit_->circuitGates_[pGate->fanoutVector_[j]];
-				gateID_to_valModified_[pFanoutGate->gateId_] = 0;
-			}
-		}
+            for (int j = 0; j < pGate->numFO_; ++j) {
+                Gate* pFanoutGate = &pCircuit_->circuitGates_[pGate->fanoutVector_[j]];
+                gateID_to_valModified_[pFanoutGate->gateId_] = 0;
+            }
+        }
 
-		backwardImplicationLevel = 0;
+        backwardImplicationLevel = 0;
 
-		for (int i = backtrackPoint + 1; i < (int)backtrackImplicatedGateIDs_.size(); ++i)
-		{
-			// Find MAX level output in backtrackImplicatedGateIDs_ and save it to backwardImplicationLevel
-			Gate *pGate = &pCircuit_->circuitGates_[backtrackImplicatedGateIDs_[i]];
+        // 从backtrackPoint后一个点开始往后遍历backtrackImplicatedGateIDs_，遍历每个backtrackPoint的扇出门，unjustifiedGateIDs_中放入atpgVal_值确定但还没有被回溯或者蕴含的门，backwardImplicationLevel赋值为最大扇出level
+        for (int i = backtrackPoint + 1; i < (int)backtrackImplicatedGateIDs_.size(); ++i) {
+            // Find MAX level output in backtrackImplicatedGateIDs_ and save it to backwardImplicationLevel
+            Gate* pGate = &pCircuit_->circuitGates_[backtrackImplicatedGateIDs_[i]];
 
-			for (int j = 0; j < pGate->numFO_; ++j)
-			{
-				Gate *pFanoutGate = &pCircuit_->circuitGates_[pGate->fanoutVector_[j]];
+            for (int j = 0; j < pGate->numFO_; ++j) {
+                Gate* pFanoutGate = &pCircuit_->circuitGates_[pGate->fanoutVector_[j]];
 
-				if (pFanoutGate->atpgVal_ != X)
-				{
-					if (!gateID_to_valModified_[pFanoutGate->gateId_])
-					{
-						unjustifiedGateIDs_.push_back(pFanoutGate->gateId_);
-					}
-					pushGateToEventStack(pFanoutGate->gateId_);
-				}
+                if (pFanoutGate->atpgVal_ != X) {
+                    if (!gateID_to_valModified_[pFanoutGate->gateId_]) {
+                        unjustifiedGateIDs_.push_back(pFanoutGate->gateId_);
+                    }
+                    pushGateToEventStack(pFanoutGate->gateId_);
+                }
 
-				if (pFanoutGate->numLevel_ > backwardImplicationLevel)
-				{
-					backwardImplicationLevel = pFanoutGate->numLevel_;
-				}
-			}
-		}
+                if (pFanoutGate->numLevel_ > backwardImplicationLevel) {
+                    backwardImplicationLevel = pFanoutGate->numLevel_;
+                }
+            }
+        }
 
-		backtrackImplicatedGateIDs_.resize(backtrackPoint + 1); // cut the last backtracked point and its associated gates
-		pDecisionGate->atpgVal_ = Val;							// toggle its value, do backtrack, ex: 1=>0, 0=>1
+        backtrackImplicatedGateIDs_.resize(backtrackPoint + 1);  // cut the last backtracked point and its associated gates
+        pDecisionGate->atpgVal_ = Val;                           // toggle its value, do backtrack, ex: 1=>0, 0=>1（这个是决策树，上层里面的那个门）
 
-		if (gateID_to_lineType_[pDecisionGate->gateId_] == HEAD_LINE)
-		{
-			gateID_to_valModified_[pDecisionGate->gateId_] = 0;
-		}
-		else
-		{
-			pushGateToEventStack(pDecisionGate->gateId_);
-		}
+        if (gateID_to_lineType_[pDecisionGate->gateId_] == HEAD_LINE) {
+            gateID_to_valModified_[pDecisionGate->gateId_] = 0;
+        } else {
+            pushGateToEventStack(pDecisionGate->gateId_);
+        }
 
-		pushGateFanoutsToEventStack(pDecisionGate->gateId_);
+        pushGateFanoutsToEventStack(pDecisionGate->gateId_);
 
-		Gate *pFaultyGate = &pCircuit_->circuitGates_[currentTargetFault_.gateID_];
+        Gate* pFaultyGate = &pCircuit_->circuitGates_[currentTargetFault_.gateID_];
 
-		dFrontiers_.clear();
-		dFrontiers_.push_back(pFaultyGate->gateId_);
-		updateDFrontiers();
+        dFrontiers_.clear();
+        dFrontiers_.push_back(pFaultyGate->gateId_);
+        updateDFrontiers();
 
-		// Update unjustifiedGateIDs_ list
-		for (int k = (int)unjustifiedGateIDs_.size() - 1; k >= 0; --k)
-		{
-			if (pCircuit_->circuitGates_[unjustifiedGateIDs_[k]].atpgVal_ == X)
-			{
-				vecDelete(unjustifiedGateIDs_, k);
-			}
-		}
-		// Reset xPathStatus
-		std::fill(gateID_to_xPathStatus_.begin(), gateID_to_xPathStatus_.end(), UNKNOWN);
-		return true;
-	}
-	return false;
+        // Update unjustifiedGateIDs_ list
+        for (int k = (int)unjustifiedGateIDs_.size() - 1; k >= 0; --k) {
+            if (pCircuit_->circuitGates_[unjustifiedGateIDs_[k]].atpgVal_ == X) {
+                vecDelete(unjustifiedGateIDs_, k);
+            }
+        }
+        // Reset xPathStatus
+        std::fill(gateID_to_xPathStatus_.begin(), gateID_to_xPathStatus_.end(), UNKNOWN);
+        return true;
+    }
+    return false;
 }
 
 // **************************************************************************
@@ -1924,39 +1703,30 @@ bool Atpg::backtrack(int &backwardImplicationLevel)
 //            ]
 // Date       [ last modified 2023/01/06 ]
 // **************************************************************************
-bool Atpg::continuationMeaningful(Gate *pLastDFrontier)
-{
-	bool fDFrontierChanged; // fDFrontierChanged is true when D-frontier must change
-	// update unjustified lines
-	updateUnjustifiedGateIDs();
+bool Atpg::continuationMeaningful(Gate* pLastDFrontier) {
+    bool fDFrontierChanged;  // fDFrontierChanged is true when D-frontier must change
+    // update unjustified lines
+    updateUnjustifiedGateIDs();
 
-	// if the initial object is modified, delete it from initialObjectives_ list
-	for (int k = (int)initialObjectives_.size() - 1; k >= 0; --k)
-	{
-		if (gateID_to_valModified_[initialObjectives_[k]])
-		{
-			vecDelete(initialObjectives_, k);
-		}
-	}
+    // if the initial object is modified, delete it from initialObjectives_ list
+    for (int k = (int)initialObjectives_.size() - 1; k >= 0; --k) {
+        if (gateID_to_valModified_[initialObjectives_[k]]) {
+            vecDelete(initialObjectives_, k);
+        }
+    }
 
-	// determine the pLastDFrontier should be changed or not
-	if (pLastDFrontier != NULL)
-	{
-		if (pLastDFrontier->atpgVal_ == X)
-		{
-			fDFrontierChanged = false;
-		}
-		else
-		{
-			fDFrontierChanged = true;
-		}
-	}
-	else
-	{
-		fDFrontierChanged = true;
-	}
-	// If all init. objectives have been implied or the last D-frontier has changed, reset backtrace atpgStatus
-	return !(initialObjectives_.empty() || fDFrontierChanged);
+    // determine the pLastDFrontier should be changed or not
+    if (pLastDFrontier != NULL) {
+        if (pLastDFrontier->atpgVal_ == X) {
+            fDFrontierChanged = false;
+        } else {
+            fDFrontierChanged = true;
+        }
+    } else {
+        fDFrontierChanged = true;
+    }
+    // If all init. objectives have been implied or the last D-frontier has changed, reset backtrace atpgStatus
+    return !(initialObjectives_.empty() || fDFrontierChanged);
 }
 
 // **************************************************************************
@@ -1976,32 +1746,26 @@ bool Atpg::continuationMeaningful(Gate *pLastDFrontier)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 last modified 2023/01/06 ]
 // **************************************************************************
-void Atpg::updateUnjustifiedGateIDs()
-{
-	// scan all gates in unjustifiedGateIDs_ List, if some gates were put into unjustified list but were implied afterwards by other gates, remove those gates from the unjustified list.
-	// if gateID_to_valModified_[mGate.gateId_]  == true, delete it from unjustifiedGateIDs_ List
-	// else push mGate into finalObjectives_ List
-	for (int i = unjustifiedGateIDs_.size() - 1; i >= 0; --i)
-	{
-		Gate &mGate = pCircuit_->circuitGates_[unjustifiedGateIDs_[i]];
-		if (gateID_to_valModified_[mGate.gateId_])
-		{
-			vecDelete(unjustifiedGateIDs_, i);
-		}
-		else
-		{
-			gateID_to_valModified_[mGate.gateId_] = 0;
-			finalObjectives_.push_back(mGate.gateId_);
-		}
-	}
+void Atpg::updateUnjustifiedGateIDs() {
+    // scan all gates in unjustifiedGateIDs_ List, if some gates were put into unjustified list but were implied afterwards by other gates, remove those gates from the unjustified list.
+    // if gateID_to_valModified_[mGate.gateId_]  == true, delete it from unjustifiedGateIDs_ List
+    // else push mGate into finalObjectives_ List
+    for (int i = unjustifiedGateIDs_.size() - 1; i >= 0; --i) {
+        Gate& mGate = pCircuit_->circuitGates_[unjustifiedGateIDs_[i]];
+        if (gateID_to_valModified_[mGate.gateId_]) {
+            vecDelete(unjustifiedGateIDs_, i);
+        } else {
+            gateID_to_valModified_[mGate.gateId_] = 0;
+            finalObjectives_.push_back(mGate.gateId_);
+        }
+    }
 
-	// pop all element from finalObjectives_ and set it's gateID_to_valModified_ to false till finalObjectives_ is empty
-	int gateID;
-	while (!finalObjectives_.empty())
-	{
-		gateID = vecPop(finalObjectives_);
-		gateID_to_valModified_[gateID] = 0;
-	}
+    // pop all element from finalObjectives_ and set it's gateID_to_valModified_ to false till finalObjectives_ is empty
+    int gateID;
+    while (!finalObjectives_.empty()) {
+        gateID = vecPop(finalObjectives_);
+        gateID_to_valModified_[gateID] = 0;
+    }
 }
 
 // **************************************************************************
@@ -2014,28 +1778,20 @@ void Atpg::updateUnjustifiedGateIDs()
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 last modified 2023/01/06 ]
 // **************************************************************************
-void Atpg::updateDFrontiers()
-{
-	for (int i = 0; i < dFrontiers_.size();)
-	{
-		Gate &mGate = pCircuit_->circuitGates_[dFrontiers_[i]];
-		if (mGate.atpgVal_ == D || mGate.atpgVal_ == B)
-		{
-			for (int j = 0; j < mGate.numFO_; ++j)
-			{
-				dFrontiers_.push_back(mGate.fanoutVector_[j]);
-			}
-			vecDelete(dFrontiers_, i);
-		}
-		else if (mGate.atpgVal_ == X)
-		{
-			++i;
-		}
-		else
-		{
-			vecDelete(dFrontiers_, i);
-		}
-	}
+void Atpg::updateDFrontiers() {
+    for (int i = 0; i < dFrontiers_.size();) {
+        Gate& mGate = pCircuit_->circuitGates_[dFrontiers_[i]];
+        if (mGate.atpgVal_ == D || mGate.atpgVal_ == B) {
+            for (int j = 0; j < mGate.numFO_; ++j) {
+                dFrontiers_.push_back(mGate.fanoutVector_[j]);
+            }
+            vecDelete(dFrontiers_, i);
+        } else if (mGate.atpgVal_ == X) {
+            ++i;
+        } else {
+            vecDelete(dFrontiers_, i);
+        }
+    }
 }
 
 // **************************************************************************
@@ -2057,21 +1813,18 @@ void Atpg::updateDFrontiers()
 //            ]
 // Date       [ last modified 2023/01/06 ]
 // **************************************************************************
-bool Atpg::checkIfFaultHasPropagatedToPO(bool &faultHasPropagatedToPO)
-{
-	// see if there is any D or B at PO/PPO?
-	// i.e. The fault has propagated to the PO/PPO
-	for (int i = 0; i < pCircuit_->numPO_ + pCircuit_->numPPI_; ++i)
-	{
-		const Value &v = pCircuit_->circuitGates_[pCircuit_->totalGate_ - i - 1].atpgVal_;
-		if (v == D || v == B)
-		{
-			faultHasPropagatedToPO = true;
-			return true;
-		}
-	}
-	faultHasPropagatedToPO = false;
-	return false;
+bool Atpg::checkIfFaultHasPropagatedToPO(bool& faultHasPropagatedToPO) {
+    // see if there is any D or B at PO/PPO?
+    // i.e. The fault has propagated to the PO/PPO
+    for (int i = 0; i < pCircuit_->numPO_ + pCircuit_->numPPI_; ++i) {
+        const Value& v = pCircuit_->circuitGates_[pCircuit_->totalGate_ - i - 1].atpgVal_;
+        if (v == D || v == B) {
+            faultHasPropagatedToPO = true;
+            return true;
+        }
+    }
+    faultHasPropagatedToPO = false;
+    return false;
 }
 
 // **************************************************************************
@@ -2085,18 +1838,15 @@ bool Atpg::checkIfFaultHasPropagatedToPO(bool &faultHasPropagatedToPO)
 //            ]
 // Date       [ last modified 2023/01/06 ]
 // **************************************************************************
-bool Atpg::checkForUnjustifiedBoundLines()
-{
-	// Find if there exists any unjustified bound line
-	for (int i = 0; i < unjustifiedGateIDs_.size(); ++i)
-	{
-		Gate *pGate = &pCircuit_->circuitGates_[unjustifiedGateIDs_[i]];
-		if (pGate->atpgVal_ != X && !gateID_to_valModified_[pGate->gateId_] && gateID_to_lineType_[pGate->gateId_] == BOUND_LINE)
-		{ // unjustified bound line
-			return true;
-		}
-	}
-	return false;
+bool Atpg::checkForUnjustifiedBoundLines() {
+    // Find if there exists any unjustified bound line
+    for (int i = 0; i < unjustifiedGateIDs_.size(); ++i) {
+        Gate* pGate = &pCircuit_->circuitGates_[unjustifiedGateIDs_[i]];
+        if (pGate->atpgVal_ != X && !gateID_to_valModified_[pGate->gateId_] && gateID_to_lineType_[pGate->gateId_] == BOUND_LINE) {  // unjustified bound line
+            return true;
+        }
+    }
+    return false;
 }
 
 // **************************************************************************
@@ -2121,108 +1871,89 @@ bool Atpg::checkForUnjustifiedBoundLines()
 //            ]
 // Date       [ WYH Ver. 1.0 started 2013/08/15 last modified 2023/01/06 ]
 // **************************************************************************
-void Atpg::findFinalObjective(BACKTRACE_STATUS &backtraceFlag, const bool &faultCanPropToPO, Gate *&pLastDFrontier)
-{
-	int index;
-	Gate *pGate = NULL;
-	BACKTRACE_RESULT result;
-	int finalObjectiveId = -1;
+void Atpg::findFinalObjective(BACKTRACE_STATUS& backtraceFlag, const bool& faultCanPropToPO, Gate*& pLastDFrontier) {
+    int index;
+    Gate* pGate = NULL;
+    BACKTRACE_RESULT result;
+    int finalObjectiveId = -1;
 
-	while (true)
-	{
-		// IS BACKTRACE FLAG ON?
-		if (backtraceFlag == INITIAL)
-		{ // YES
-			// RESET BACKTRACE FLAG
-			backtraceFlag = FAN_OBJ_DETERMINE;
-			// set the times of objective 0 and objective 1 of the gate to be zero
-			// AND LET ALL THE SETS OF OBJECTIVES BE EMPTY
-			for (const int &gateID : gateIDsToResetAfterBackTrace_)
-			{
-				setGaten0n1(gateID, 0, 0);
-			}
-			gateIDsToResetAfterBackTrace_.clear();
-			clearAllObjectives();
+    while (true) {
+        // IS BACKTRACE FLAG ON?
+        if (backtraceFlag == INITIAL) {  // YES
+            // RESET BACKTRACE FLAG
+            backtraceFlag = FAN_OBJ_DETERMINE;
+            // set the times of objective 0 and objective 1 of the gate to be zero
+            // AND LET ALL THE SETS OF OBJECTIVES BE EMPTY
+            for (const int& gateID : gateIDsToResetAfterBackTrace_) {
+                setGaten0n1(gateID, 0, 0);
+            }
+            gateIDsToResetAfterBackTrace_.clear();
+            clearAllObjectives();
 
-			// IS THERE ANY UNJUSTIFIED LINE?
-			if (!unjustifiedGateIDs_.empty())
-			{ // YES
-				// LET ALL THE UNJUSTIFIED LINES BE THE SET OF INITIAL OBJECTIVES
-				initialObjectives_ = unjustifiedGateIDs_;
+            // IS THERE ANY UNJUSTIFIED LINE?
+            if (!unjustifiedGateIDs_.empty()) {  // YES
+                // LET ALL THE UNJUSTIFIED LINES BE THE SET OF INITIAL OBJECTIVES
+                initialObjectives_ = unjustifiedGateIDs_;
 
-				// FAULT SIGNAL PROPAGATED TO A PRIMARY OUTPUT?
-				if (faultCanPropToPO) // YES
-				{					  // do not add any gates
-					pLastDFrontier = NULL;
-				}
-				else
-				{ // NO
-					// ADD A GATE IN D-FRONTIER TO THE SET OF INITIAL OBJECTIVES
-					pLastDFrontier = findClosestToPO(dFrontiers_, index);
-					initialObjectives_.push_back(pLastDFrontier->gateId_);
-				}
-			}
-			else
-			{ // NO
-				// ADD A GATE IN D-FRONTIER TO THE SET OF INITIAL OBJECTIVES
-				pLastDFrontier = findClosestToPO(dFrontiers_, index);
-				initialObjectives_.push_back(pLastDFrontier->gateId_);
-			}
+                // FAULT SIGNAL PROPAGATED TO A PRIMARY OUTPUT?
+                if (faultCanPropToPO)  // YES
+                {                      // do not add any gates
+                    pLastDFrontier = NULL;
+                } else {  // NO
+                    // ADD A GATE IN D-FRONTIER TO THE SET OF INITIAL OBJECTIVES
+                    pLastDFrontier = findClosestToPO(dFrontiers_, index);
+                    initialObjectives_.push_back(pLastDFrontier->gateId_);
+                }
+            } else {  // NO
+                // ADD A GATE IN D-FRONTIER TO THE SET OF INITIAL OBJECTIVES
+                pLastDFrontier = findClosestToPO(dFrontiers_, index);
+                initialObjectives_.push_back(pLastDFrontier->gateId_);
+            }
 
-			// A
-			// MULTIPLE BACKTRACE FROM THE SET OF INITIAL OBJECTIVES
-			result = multipleBacktrace(INITIAL, finalObjectiveId);
-			// CONTRADICTORY REQUIREMENT AT A FANOUT-POINT OCCURRED?
-			if (result == CONTRADICTORY)
-			{ // YES
-				// LET THE FANOUT-POINT OBJECTIVE BE FINAL OBJECTIVE TO ASSIGN VALUE
-				finalObjectives_.push_back(finalObjectiveId);
-				// EXIT
-				return;
-			}
-		}
-		else
-		{ // NO
-			// IS THE SET OF FANOUT-POINT OBJECTIVE EMPTY?
-			if (!fanoutObjectives_.empty())
-			{ // NO
-				// B
-				// MULTIPLE BACKTRACE FROM A FANOUT-POINT OBJECTIVE
-				result = multipleBacktrace(FAN_OBJ_DETERMINE, finalObjectiveId);
-				// CONTRADICTORY REQUIREMENT AT A FANOUT-POINT OCCURRED?
-				if (result == CONTRADICTORY)
-				{ // YES
-					// LET THE FANOUT-POINT OBJECTIVE BE FINAL OBJECTIVE TO ASSIGN VALUE
-					finalObjectives_.push_back(finalObjectiveId);
-					// EXIT
-					return;
-				}
-			}
-		}
+            // A
+            // MULTIPLE BACKTRACE FROM THE SET OF INITIAL OBJECTIVES
+            result = multipleBacktrace(INITIAL, finalObjectiveId);
+            // CONTRADICTORY REQUIREMENT AT A FANOUT-POINT OCCURRED?
+            if (result == CONTRADICTORY) {  // YES
+                // LET THE FANOUT-POINT OBJECTIVE BE FINAL OBJECTIVE TO ASSIGN VALUE
+                finalObjectives_.push_back(finalObjectiveId);
+                // EXIT
+                return;
+            }
+        } else {  // NO
+            // IS THE SET OF FANOUT-POINT OBJECTIVE EMPTY?
+            if (!fanoutObjectives_.empty()) {  // NO
+                // B
+                // MULTIPLE BACKTRACE FROM A FANOUT-POINT OBJECTIVE
+                result = multipleBacktrace(FAN_OBJ_DETERMINE, finalObjectiveId);
+                // CONTRADICTORY REQUIREMENT AT A FANOUT-POINT OCCURRED?
+                if (result == CONTRADICTORY) {  // YES
+                    // LET THE FANOUT-POINT OBJECTIVE BE FINAL OBJECTIVE TO ASSIGN VALUE
+                    finalObjectives_.push_back(finalObjectiveId);
+                    // EXIT
+                    return;
+                }
+            }
+        }
 
-		while (true)
-		{
-			// IS THE SET OF HEAD OBJECTIVES EMPTY?
-			if (headLineObjectives_.empty())
-			{ // YES
-				backtraceFlag = INITIAL;
-				break;
-			}
-			else
-			{ // NO
-				// TAKE OUT A HEAD OBJECTIVE
-				pGate = &pCircuit_->circuitGates_[vecPop(headLineObjectives_)];
-				// IS THE HEAD LINE UNSPECIFIED?
-				if (pGate->atpgVal_ == X)
-				{ // YES
-					// LET THE HEAD OBJECTIVE BE FINAL OBJECTIVE
-					finalObjectives_.push_back(pGate->gateId_);
-					// EXIT
-					return;
-				}
-			}
-		}
-	}
+        while (true) {
+            // IS THE SET OF HEAD OBJECTIVES EMPTY?
+            if (headLineObjectives_.empty()) {  // YES
+                backtraceFlag = INITIAL;
+                break;
+            } else {  // NO
+                // TAKE OUT A HEAD OBJECTIVE
+                pGate = &pCircuit_->circuitGates_[vecPop(headLineObjectives_)];
+                // IS THE HEAD LINE UNSPECIFIED?
+                if (pGate->atpgVal_ == X) {  // YES
+                    // LET THE HEAD OBJECTIVE BE FINAL OBJECTIVE
+                    finalObjectives_.push_back(pGate->gateId_);
+                    // EXIT
+                    return;
+                }
+            }
+        }
+    }
 }
 
 // **************************************************************************
@@ -2233,18 +1964,17 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &backtraceFlag, const bool &fault
 //            ]
 // Date       [ last modified 2023/01/06 ]
 // **************************************************************************
-void Atpg::clearAllObjectives()
-{
-	initialObjectives_.clear();
-	currentObjectives_.clear();
-	fanoutObjectives_.clear();
-	headLineObjectives_.clear();
-	finalObjectives_.clear();
-	initialObjectives_.reserve(MAX_LIST_SIZE);
-	currentObjectives_.reserve(MAX_LIST_SIZE);
-	fanoutObjectives_.reserve(MAX_LIST_SIZE);
-	headLineObjectives_.reserve(MAX_LIST_SIZE);
-	finalObjectives_.reserve(MAX_LIST_SIZE);
+void Atpg::clearAllObjectives() {
+    initialObjectives_.clear();
+    currentObjectives_.clear();
+    fanoutObjectives_.clear();
+    headLineObjectives_.clear();
+    finalObjectives_.clear();
+    initialObjectives_.reserve(MAX_LIST_SIZE);
+    currentObjectives_.reserve(MAX_LIST_SIZE);
+    fanoutObjectives_.reserve(MAX_LIST_SIZE);
+    headLineObjectives_.reserve(MAX_LIST_SIZE);
+    finalObjectives_.reserve(MAX_LIST_SIZE);
 }
 
 // **************************************************************************
@@ -2259,37 +1989,29 @@ void Atpg::clearAllObjectives()
 //            ]
 // Date       [ last modified 2023/01/06 ]
 // **************************************************************************
-void Atpg::assignAtpgValToFinalObjectiveGates()
-{
-	while (!finalObjectives_.empty())
-	{ // while exist any finalObject
-		Gate *pGate = &pCircuit_->circuitGates_[vecPop(finalObjectives_)];
+void Atpg::assignAtpgValToFinalObjectiveGates() {
+    while (!finalObjectives_.empty()) {  // while exist any finalObject
+        Gate* pGate = &pCircuit_->circuitGates_[vecPop(finalObjectives_)];
 
-		// judge the value by numOfZero and numOfOne
-		if (gateID_to_n0_[pGate->gateId_] > gateID_to_n1_[pGate->gateId_])
-		{
-			pGate->atpgVal_ = L;
-		}
-		else
-		{
-			pGate->atpgVal_ = H;
-		}
+        // judge the value by numOfZero and numOfOne
+        if (gateID_to_n0_[pGate->gateId_] > gateID_to_n1_[pGate->gateId_]) {
+            pGate->atpgVal_ = L;
+        } else {
+            pGate->atpgVal_ = H;
+        }
 
-		// put decision of the finalObjective into decisionTree
-		backtrackDecisionTree_.put(pGate->gateId_, (int)backtrackImplicatedGateIDs_.size());
-		// record this gate and backtrace later
-		backtrackImplicatedGateIDs_.push_back(pGate->gateId_);
+        // put decision of the finalObjective into decisionTree
+        backtrackDecisionTree_.put(pGate->gateId_, (int)backtrackImplicatedGateIDs_.size());
+        // record this gate and backtrace later
+        backtrackImplicatedGateIDs_.push_back(pGate->gateId_);
 
-		if (gateID_to_lineType_[pGate->gateId_] == HEAD_LINE)
-		{
-			gateID_to_valModified_[pGate->gateId_] = 1;
-		}
-		else
-		{
-			pushGateToEventStack(pGate->gateId_);
-		}
-		pushGateFanoutsToEventStack(pGate->gateId_);
-	}
+        if (gateID_to_lineType_[pGate->gateId_] == HEAD_LINE) {
+            gateID_to_valModified_[pGate->gateId_] = 1;
+        } else {
+            pushGateToEventStack(pGate->gateId_);
+        }
+        pushGateFanoutsToEventStack(pGate->gateId_);
+    }
 }
 
 // **************************************************************************
@@ -2305,45 +2027,37 @@ void Atpg::assignAtpgValToFinalObjectiveGates()
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 last modified 2023/01/06 ]
 // **************************************************************************
-void Atpg::justifyFreeLines(Fault &originalFault)
-{
-	Gate *pHeadLineFaultGate = NULL;
+void Atpg::justifyFreeLines(Fault& originalFault) {
+    Gate* pHeadLineFaultGate = NULL;
 
-	int gateID = currentTargetHeadLineFault_.gateID_;
-	if (gateID != -1)
-	{
-		pHeadLineFaultGate = &pCircuit_->circuitGates_[gateID];
-	}
+    int gateID = currentTargetHeadLineFault_.gateID_;
 
-	// scan each HEADLINE
-	for (int i = 0; i < numOfheadLines_; ++i)
-	{
-		Gate *pGate = &pCircuit_->circuitGates_[headLineGateIDs_[i]];
-		if (pGate->prevAtpgValStored_ == pGate->atpgVal_)
-		{
-			continue;
-		}
-		if (pHeadLineFaultGate == pGate)
-		{ // if the HEADLINE scanned now(pGate) is the new faulty gate
-			// If the Original Fault is on a FREE LINE, map it back
-			restoreFault(originalFault);
-			continue;
-		}
-		// for other HEADLINE, set D or D' to H or L respectively,
-		if (pGate->atpgVal_ == D)
-		{
-			pGate->atpgVal_ = H;
-		}
-		else if (pGate->atpgVal_ == B)
-		{
-			pGate->atpgVal_ = L;
-		}
+    if (gateID != -1) {
+        pHeadLineFaultGate = &pCircuit_->circuitGates_[gateID];
+    }
 
-		if (!(pGate->gateType_ == Gate::PI || pGate->gateType_ == Gate::PPI || pGate->atpgVal_ == X))
-		{
-			fanoutFreeBacktrace(pGate);
-		}
-	}
+    // scan each HEADLINE
+    for (int i = 0; i < numOfheadLines_; ++i) {
+        Gate* pGate = &pCircuit_->circuitGates_[headLineGateIDs_[i]];
+        if (pGate->prevAtpgValStored_ == pGate->atpgVal_) {
+            continue;
+        }
+        if (pHeadLineFaultGate == pGate) {  // if the HEADLINE scanned now(pGate) is the new faulty gate
+            // If the Original Fault is on a FREE LINE, map it back
+            restoreFault(originalFault);
+            continue;
+        }
+        // for other HEADLINE, set D or D' to H or L respectively,
+        if (pGate->atpgVal_ == D) {
+            pGate->atpgVal_ = H;
+        } else if (pGate->atpgVal_ == B) {
+            pGate->atpgVal_ = L;
+        }
+
+        if (!(pGate->gateType_ == Gate::PI || pGate->gateType_ == Gate::PPI || pGate->atpgVal_ == X)) {
+            fanoutFreeBacktrace(pGate);
+        }
+    }
 }
 
 // **************************************************************************
@@ -2363,81 +2077,65 @@ void Atpg::justifyFreeLines(Fault &originalFault)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 last modified 2023/01/06 ]
 // **************************************************************************
-void Atpg::restoreFault(Fault &originalFault)
-{
-	Gate *pFaultPropGate = NULL;
+void Atpg::restoreFault(Fault& originalFault) {
+    Gate* pFaultPropGate = NULL;
 
-	fanoutObjectives_.clear();
-	pFaultPropGate = &pCircuit_->circuitGates_[originalFault.gateID_];
+    fanoutObjectives_.clear();
+    pFaultPropGate = &pCircuit_->circuitGates_[originalFault.gateID_];
 
-	if (originalFault.faultyLine_ == 0)
-	{
-		fanoutObjectives_.push_back(pFaultPropGate->gateId_);
-	}
+    if (originalFault.faultyLine_ == 0) {
+        fanoutObjectives_.push_back(pFaultPropGate->gateId_);
+    }
 
-	// To fix bugs of free line fault which is at gate input
-	for (int i = 0; i < pFaultPropGate->numFI_; ++i)
-	{
-		Gate *pFaninGate = &pCircuit_->circuitGates_[pFaultPropGate->faninVector_[i]];
-		if (pFaninGate->atpgVal_ == D)
-		{
-			pFaninGate->atpgVal_ = H;
-		}
-		else if (pFaninGate->atpgVal_ == B)
-		{
-			pFaninGate->atpgVal_ = L;
-		}
+    // To fix bugs of free line fault which is at gate input
+    for (int i = 0; i < pFaultPropGate->numFI_; ++i) {
+        Gate* pFaninGate = &pCircuit_->circuitGates_[pFaultPropGate->faninVector_[i]];
+        if (pFaninGate->atpgVal_ == D) {
+            pFaninGate->atpgVal_ = H;
+        } else if (pFaninGate->atpgVal_ == B) {
+            pFaninGate->atpgVal_ = L;
+        }
 
-		if (pFaninGate->atpgVal_ == L || pFaninGate->atpgVal_ == H)
-		{
-			fanoutObjectives_.push_back(pFaninGate->gateId_);
-		}
-	}
+        if (pFaninGate->atpgVal_ == L || pFaninGate->atpgVal_ == H) {
+            fanoutObjectives_.push_back(pFaninGate->gateId_);
+        }
+    }
 
-	// push original fault gate into fanoutObjectives_ list
+    // push original fault gate into fanoutObjectives_ list
 
-	// for each loop, scan all fanin gates of pFaultPropGate (initial to be original fault gate)
-	// if fanin gates' value == 0 or 1, add it into fanoutObjectives_ list iteratively
-	// let pFaultPropGate's output gate (FREE_LINE only have one output gate) be new pFaultPropGate
-	// and perform the procedure of each loop till pFaultPropGate is HEADLINE
-	if (gateID_to_lineType_[pFaultPropGate->gateId_] == FREE_LINE)
-	{
-		while (pFaultPropGate->numFO_ > 0)
-		{
-			pFaultPropGate = &pCircuit_->circuitGates_[pFaultPropGate->fanoutVector_[0]];
-			for (int i = 0; i < pFaultPropGate->numFI_; ++i)
-			{
-				Gate *pFaninGate = &pCircuit_->circuitGates_[pFaultPropGate->faninVector_[i]];
-				if (pFaninGate->atpgVal_ == L || pFaninGate->atpgVal_ == H)
-				{
-					fanoutObjectives_.push_back(pFaninGate->gateId_);
-				}
-			}
-			if (gateID_to_lineType_[pFaultPropGate->gateId_] == HEAD_LINE)
-			{
-				break;
-			}
-		}
-	}
-	// each loop pop out an element in the fanoutObjectives_ list
-	while (!fanoutObjectives_.empty())
-	{
-		Gate *pGate = &pCircuit_->circuitGates_[vecPop(fanoutObjectives_)];
-		// if the gate's value is D set to H, D' set to L
-		if (pGate->atpgVal_ == D)
-		{
-			pGate->atpgVal_ = H;
-		}
-		else if (pGate->atpgVal_ == B)
-		{
-			pGate->atpgVal_ = L;
-		}
+    // for each loop, scan all fanin gates of pFaultPropGate (initial to be original fault gate)
+    // if fanin gates' value == 0 or 1, add it into fanoutObjectives_ list iteratively
+    // let pFaultPropGate's output gate (FREE_LINE only have one output gate) be new pFaultPropGate
+    // and perform the procedure of each loop till pFaultPropGate is HEADLINE
+    if (gateID_to_lineType_[pFaultPropGate->gateId_] == FREE_LINE) {
+        while (pFaultPropGate->numFO_ > 0) {
+            pFaultPropGate = &pCircuit_->circuitGates_[pFaultPropGate->fanoutVector_[0]];
+            for (int i = 0; i < pFaultPropGate->numFI_; ++i) {
+                Gate* pFaninGate = &pCircuit_->circuitGates_[pFaultPropGate->faninVector_[i]];
+                if (pFaninGate->atpgVal_ == L || pFaninGate->atpgVal_ == H) {
+                    fanoutObjectives_.push_back(pFaninGate->gateId_);
+                }
+            }
+            if (gateID_to_lineType_[pFaultPropGate->gateId_] == HEAD_LINE) {
+                break;
+            }
+        }
+    }
+    // each loop pop out an element in the fanoutObjectives_ list
+    while (!fanoutObjectives_.empty()) {
+        Gate* pGate = &pCircuit_->circuitGates_[vecPop(fanoutObjectives_)];
+        // if the gate's value is D set to H, D' set to L
+        if (pGate->atpgVal_ == D) {
+            pGate->atpgVal_ = H;
+        } else if (pGate->atpgVal_ == B) {
+            pGate->atpgVal_ = L;
+        }
 
-		if (!(pGate->gateType_ == Gate::PI || pGate->gateType_ == Gate::PPI || pGate->atpgVal_ == X)) // if the gate's value not unknown and the gates type not PI or PPI
-		{
-			fanoutFreeBacktrace(pGate);
-		}
-	}
+        if (!(pGate->gateType_ == Gate::PI || pGate->gateType_ == Gate::PPI || pGate->atpgVal_ == X))  // if the gate's value not unknown and the gates type not PI or PPI
+        {
+            fanoutFreeBacktrace(pGate);
+        }
+    }
 }
 
 // **************************************************************************
@@ -2460,33 +2158,28 @@ void Atpg::restoreFault(Fault &originalFault)
 //            ]
 // Date       [ last modified 2023/01/06 ]
 // **************************************************************************
-int Atpg::countEffectiveDFrontiers(Gate *pFaultyLineGate)
-{
-	// update the frontier
-	updateDFrontiers();
+int Atpg::countEffectiveDFrontiers(Gate* pFaultyLineGate) {
+    // update the frontier
+    updateDFrontiers();
 
-	// Change the xPathStatus from XPATH_EXIST to UNKNOWN of a gate
-	// which has equal or higher level than the faulty gate
-	//(the gate array has been given its level already)
-	// This is to clear the xPathStatus of previous xPathTracing
-	for (int i = pFaultyLineGate->gateId_; i < pCircuit_->totalGate_; ++i)
-	{
-		Gate *pGate = &pCircuit_->circuitGates_[i];
-		if (gateID_to_xPathStatus_[pGate->gateId_] == XPATH_EXIST)
-		{
-			gateID_to_xPathStatus_[pGate->gateId_] = UNKNOWN;
-		}
-	}
+    // Change the xPathStatus from XPATH_EXIST to UNKNOWN of a gate
+    // which has equal or higher level than the faulty gate
+    //(the gate array has been given its level already)
+    // This is to clear the xPathStatus of previous xPathTracing
+    for (int i = pFaultyLineGate->gateId_; i < pCircuit_->totalGate_; ++i) {
+        Gate* pGate = &pCircuit_->circuitGates_[i];
+        if (gateID_to_xPathStatus_[pGate->gateId_] == XPATH_EXIST) {
+            gateID_to_xPathStatus_[pGate->gateId_] = UNKNOWN;
+        }
+    }
 
-	// if D-frontier can't propagate to the PO, erase it
-	for (int k = dFrontiers_.size() - 1; k >= 0; --k)
-	{
-		if (!xPathTracing(&pCircuit_->circuitGates_[dFrontiers_[k]]))
-		{
-			vecDelete(dFrontiers_, k);
-		}
-	}
-	return dFrontiers_.size();
+    // if D-frontier can't propagate to the PO, erase it
+    for (int k = dFrontiers_.size() - 1; k >= 0; --k) {
+        if (!xPathTracing(&pCircuit_->circuitGates_[dFrontiers_[k]])) {
+            vecDelete(dFrontiers_, k);
+        }
+    }
+    return dFrontiers_.size();
 }
 
 // **************************************************************************
@@ -2544,144 +2237,117 @@ int Atpg::countEffectiveDFrontiers(Gate *pFaultyLineGate)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 last modified 2023/01/06 ]
 // **************************************************************************
-int Atpg::doUniquePathSensitization(Gate &gate)
-{
-	int backwardImplicationLevel = NO_UNIQUE_PATH;
-	Gate *pFaultyGate = &pCircuit_->circuitGates_[currentTargetFault_.gateID_];
+int Atpg::doUniquePathSensitization(Gate& gate) {
+    int backwardImplicationLevel = NO_UNIQUE_PATH;
+    Gate* pFaultyGate = &pCircuit_->circuitGates_[currentTargetFault_.gateID_];
 
-	// if gate is not the FaultyGate
-	if (pFaultyGate->gateId_ != gate.gateId_)
-	{
-		Value NonControlVal = gate.getInputNonCtrlValue();
-		// if gate has an NonControlVal (1 or 0)
-		if (NonControlVal != X)
-		{
-			for (int i = 0; i < gate.numFI_; ++i)
-			{
-				Gate *pFaninGate = &pCircuit_->circuitGates_[gate.faninVector_[i]];
-				if (pFaninGate->atpgVal_ == X)
-				{
-					pFaninGate->atpgVal_ = NonControlVal;
-					if (backwardImplicationLevel < pFaninGate->numLevel_) // backwardImplicationLevel becomes MAX of fan in level
-					{
-						backwardImplicationLevel = pFaninGate->numLevel_;
-					}
+    // if gate is not the FaultyGate
+    if (pFaultyGate->gateId_ != gate.gateId_) {
+        Value NonControlVal = gate.getInputNonCtrlValue();
 
-					backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
-					pushGateToEventStack(gate.faninVector_[i]);
-					pushGateFanoutsToEventStack(gate.faninVector_[i]);
-				}
-				else if (pFaninGate->atpgVal_ == gate.getInputCtrlValue())
-				{
-					return UNIQUE_PATH_SENSITIZE_FAIL;
-				}
-			}
-		}
-	}
+        // if gate has an NonControlVal (1 or 0)
+        if (NonControlVal != X) {
+            for (int i = 0; i < gate.numFI_; ++i) {
+                Gate* pFaninGate = &pCircuit_->circuitGates_[gate.faninVector_[i]];
+                if (pFaninGate->atpgVal_ == X) {
+                    pFaninGate->atpgVal_ = NonControlVal;
+                    if (backwardImplicationLevel < pFaninGate->numLevel_)  // backwardImplicationLevel becomes MAX of fan in level
+                    {
+                        backwardImplicationLevel = pFaninGate->numLevel_;
+                    }
 
-	Gate *pCurrGate = &gate;
-	Gate *pNextGate = NULL;
+                    backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
+                    pushGateToEventStack(gate.faninVector_[i]);
+                    pushGateFanoutsToEventStack(gate.faninVector_[i]);
+                } else if (pFaninGate->atpgVal_ == gate.getInputCtrlValue()) {
+                    return UNIQUE_PATH_SENSITIZE_FAIL;
+                }
+            }
+        }
+    }
 
-	while (true)
-	{
-		std::vector<int> &UniquePathList = gateID_to_uniquePath_[pCurrGate->gateId_];
+    Gate* pCurrGate = &gate;
+    Gate* pNextGate = NULL;
 
-		// If pCurrGate is PO or PPO, break.
-		if (pCurrGate->gateType_ == Gate::PO || pCurrGate->gateType_ == Gate::PPO)
-		{
-			break;
-		}
-		else if (pCurrGate->numFO_ == 1) // If pCurrGate is fanout free, set pNextGate to its output gate.
-		{
-			pNextGate = &pCircuit_->circuitGates_[pCurrGate->fanoutVector_[0]];
-		}
-		else if (UniquePathList.size() == 0) // If pCurrGate no UniquePath, break.
-		{
-			break;
-		}
-		else
-		{
-			pNextGate = &pCircuit_->circuitGates_[UniquePathList[0]]; // set pNextGate to UniquePathList[0].
-		}
+    while (true) {
+        std::vector<int>& UniquePathList = gateID_to_uniquePath_[pCurrGate->gateId_];
 
-		Value NonControlVal = pNextGate->getInputNonCtrlValue();
+        // If pCurrGate is PO or PPO, break.
+        if (pCurrGate->gateType_ == Gate::PO || pCurrGate->gateType_ == Gate::PPO) {
+            break;
+        } else if (pCurrGate->numFO_ == 1)  // If pCurrGate is fanout free, set pNextGate to its output gate.
+        {
+            pNextGate = &pCircuit_->circuitGates_[pCurrGate->fanoutVector_[0]];
+        } else if (UniquePathList.size() == 0)  // If pCurrGate no UniquePath, break.
+        {
+            break;
+        } else {
+            pNextGate = &pCircuit_->circuitGates_[UniquePathList[0]];  // set pNextGate to UniquePathList[0].
+        }
 
-		if (NonControlVal != X && !pNextGate->isUnary())
-		{ // If pNextGate is Unary and its NonControlVal is not unknown.
-			if (pCurrGate->numFO_ == 1)
-			{
-				// If gCurrGate(pGate) is fanout free, pNextGate is gCurrGate's output gate.
-				// Go through all pNextGate's input.
-				for (int i = 0; i < pNextGate->numFI_; ++i)
-				{
-					Gate *pFaninGate = &pCircuit_->circuitGates_[pNextGate->faninVector_[i]];
+        Value NonControlVal = pNextGate->getInputNonCtrlValue();
 
-					if (pFaninGate != pCurrGate && pNextGate->getInputCtrlValue() != X && pFaninGate->atpgVal_ == pNextGate->getInputCtrlValue())
-					{
-						return UNIQUE_PATH_SENSITIZE_FAIL;
-					}
+        if (NonControlVal != X && !pNextGate->isUnary()) {  // If pNextGate is Unary and its NonControlVal is not unknown.
+            if (pCurrGate->numFO_ == 1) {
+                // If gCurrGate(pGate) is fanout free, pNextGate is gCurrGate's output gate.
+                // Go through all pNextGate's input.
+                for (int i = 0; i < pNextGate->numFI_; ++i) {
+                    Gate* pFaninGate = &pCircuit_->circuitGates_[pNextGate->faninVector_[i]];
 
-					if (pFaninGate != pCurrGate && pFaninGate->atpgVal_ == X)
-					{
-						pFaninGate->atpgVal_ = NonControlVal; // Set input gate of pNextGate to pNextGate's NonControlVal
-						if (backwardImplicationLevel < pFaninGate->numLevel_)
-						{
-							backwardImplicationLevel = pFaninGate->numLevel_;
-						}
-						// backwardImplicationLevel becomes MAX of pNextGate's fanin level
-						backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
-						pushGateToEventStack(pNextGate->faninVector_[i]);
-						pushGateFanoutsToEventStack(pNextGate->faninVector_[i]);
-					}
-				}
-			}
-			else
-			{
-				// gCurrGate(pGate) is not fanout free, pNextGate is UniquePathList[0].
-				bool DependOnCurrent;
-				for (int i = 0; i < pNextGate->numFI_; ++i)
-				{
-					// Go through all pNextGate's input.
-					Gate *pFaninGate = &pCircuit_->circuitGates_[pNextGate->faninVector_[i]];
-					DependOnCurrent = false;
+                    if (pFaninGate != pCurrGate && pNextGate->getInputCtrlValue() != X && pFaninGate->atpgVal_ == pNextGate->getInputCtrlValue()) {
+                        return UNIQUE_PATH_SENSITIZE_FAIL;
+                    }
 
-					for (int j = 1; j < UniquePathList.size(); ++j)
-					{
-						if (UniquePathList[j] == pFaninGate->gateId_)
-						{
-							DependOnCurrent = true;
-							break;
-						}
-					}
+                    if (pFaninGate != pCurrGate && pFaninGate->atpgVal_ == X) {
+                        pFaninGate->atpgVal_ = NonControlVal;  // Set input gate of pNextGate to pNextGate's NonControlVal
+                        if (backwardImplicationLevel < pFaninGate->numLevel_) {
+                            backwardImplicationLevel = pFaninGate->numLevel_;
+                        }
+                        // backwardImplicationLevel becomes MAX of pNextGate's fanin level
+                        backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
+                        pushGateToEventStack(pNextGate->faninVector_[i]);
+                        pushGateFanoutsToEventStack(pNextGate->faninVector_[i]);
+                    }
+                }
+            } else {
+                // gCurrGate(pGate) is not fanout free, pNextGate is UniquePathList[0].
+                bool DependOnCurrent;
+                for (int i = 0; i < pNextGate->numFI_; ++i) {
+                    // Go through all pNextGate's input.
+                    Gate* pFaninGate = &pCircuit_->circuitGates_[pNextGate->faninVector_[i]];
+                    DependOnCurrent = false;
 
-					if (!DependOnCurrent)
-					{
-						if (pFaninGate->atpgVal_ != X && pFaninGate->atpgVal_ == pNextGate->getInputCtrlValue() && pNextGate->getInputCtrlValue() != X)
-						{
-							return UNIQUE_PATH_SENSITIZE_FAIL;
-						}
+                    for (int j = 1; j < UniquePathList.size(); ++j) {
+                        if (UniquePathList[j] == pFaninGate->gateId_) {
+                            DependOnCurrent = true;
+                            break;
+                        }
+                    }
 
-						if (pFaninGate->atpgVal_ != X)
-						{
-							continue;
-						}
+                    if (!DependOnCurrent) {
+                        if (pFaninGate->atpgVal_ != X && pFaninGate->atpgVal_ == pNextGate->getInputCtrlValue() && pNextGate->getInputCtrlValue() != X) {
+                            return UNIQUE_PATH_SENSITIZE_FAIL;
+                        }
 
-						pFaninGate->atpgVal_ = NonControlVal; // set to NonControlVal
+                        if (pFaninGate->atpgVal_ != X) {
+                            continue;
+                        }
 
-						if (backwardImplicationLevel < pFaninGate->numLevel_)
-						{
-							backwardImplicationLevel = pFaninGate->numLevel_; // backwardImplicationLevel becomes MAX of pNextGate's fanin level
-						}
-						backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
-						pushGateToEventStack(pNextGate->faninVector_[i]);
-						pushGateFanoutsToEventStack(pNextGate->faninVector_[i]);
-					}
-				}
-			}
-		}
-		pCurrGate = pNextGate; // move to last gate in gateID_to_uniquePath_
-	}
-	return backwardImplicationLevel;
+                        pFaninGate->atpgVal_ = NonControlVal;  // set to NonControlVal
+
+                        if (backwardImplicationLevel < pFaninGate->numLevel_) {
+                            backwardImplicationLevel = pFaninGate->numLevel_;  // backwardImplicationLevel becomes MAX of pNextGate's fanin level
+                        }
+                        backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
+                        pushGateToEventStack(pNextGate->faninVector_[i]);
+                        pushGateFanoutsToEventStack(pNextGate->faninVector_[i]);
+                    }
+                }
+            }
+        }
+        pCurrGate = pNextGate;  // move to last gate in gateID_to_uniquePath_
+    }
+    return backwardImplicationLevel;
 }
 
 // **************************************************************************
@@ -2702,15 +2368,13 @@ int Atpg::doUniquePathSensitization(Gate &gate)
 //            ]
 // Date       [ started 2020/07/07    last modified 2023/01/06 ]
 // **************************************************************************
-bool Atpg::xPathExists(Gate *pGate)
-{
-	// Clear the gateID_to_xPathStatus_ from target gate to PO/PPO
-	// TODO: This part can be implemented by event-driven method
-	for (int i = pGate->gateId_; i < pCircuit_->totalGate_; ++i)
-	{
-		gateID_to_xPathStatus_[i] = UNKNOWN;
-	}
-	return xPathTracing(pGate);
+bool Atpg::xPathExists(Gate* pGate) {
+    // Clear the gateID_to_xPathStatus_ from target gate to PO/PPO
+    // TODO: This part can be implemented by event-driven method
+    for (int i = pGate->gateId_; i < pCircuit_->totalGate_; ++i) {
+        gateID_to_xPathStatus_[i] = UNKNOWN;
+    }
+    return xPathTracing(pGate);
 }
 
 // **************************************************************************
@@ -2732,37 +2396,31 @@ bool Atpg::xPathExists(Gate *pGate)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 last modified 2023/01/06 ]
 // **************************************************************************
-bool Atpg::xPathTracing(Gate *pGate)
-{
-	if (pGate->atpgVal_ != X || gateID_to_xPathStatus_[pGate->gateId_] == NO_XPATH_EXIST)
-	{
-		gateID_to_xPathStatus_[pGate->gateId_] = NO_XPATH_EXIST;
-		return false;
-	}
+bool Atpg::xPathTracing(Gate* pGate) {
+    if (pGate->atpgVal_ != X || gateID_to_xPathStatus_[pGate->gateId_] == NO_XPATH_EXIST) {
+        gateID_to_xPathStatus_[pGate->gateId_] = NO_XPATH_EXIST;
+        return false;
+    }
 
-	if (gateID_to_xPathStatus_[pGate->gateId_] == XPATH_EXIST)
-	{
-		return true;
-	}
+    if (gateID_to_xPathStatus_[pGate->gateId_] == XPATH_EXIST) {
+        return true;
+    }
 
-	if (pGate->gateType_ == Gate::PO || pGate->gateType_ == Gate::PPO)
-	{
-		gateID_to_xPathStatus_[pGate->gateId_] = XPATH_EXIST;
-		return true;
-	}
+    if (pGate->gateType_ == Gate::PO || pGate->gateType_ == Gate::PPO) {
+        gateID_to_xPathStatus_[pGate->gateId_] = XPATH_EXIST;
+        return true;
+    }
 
-	for (int i = 0; i < pGate->numFO_; ++i)
-	{
-		// TO-DO homework 03
-		if (xPathTracing(&(pCircuit_->circuitGates_[pGate->fanoutVector_[i]])))
-		{
-			gateID_to_xPathStatus_[pGate->gateId_] = XPATH_EXIST;
-			return true;
-		}
-		// end of TO-DO
-	}
-	gateID_to_xPathStatus_[pGate->gateId_] = NO_XPATH_EXIST;
-	return false;
+    for (int i = 0; i < pGate->numFO_; ++i) {
+        // TO-DO homework 03
+        if (xPathTracing(&(pCircuit_->circuitGates_[pGate->fanoutVector_[i]]))) {
+            gateID_to_xPathStatus_[pGate->gateId_] = XPATH_EXIST;
+            return true;
+        }
+        // end of TO-DO
+    }
+    gateID_to_xPathStatus_[pGate->gateId_] = NO_XPATH_EXIST;
+    return false;
 }
 
 // **************************************************************************
@@ -2805,176 +2463,134 @@ bool Atpg::xPathTracing(Gate *pGate)
 //            ]
 // Date       [ WYH Ver. 1.0 started 2013/08/16 last modified 2023/01/06 ]
 // **************************************************************************
-int Atpg::setFaultyGate(Fault &fault)
-{
-	Value valueTemp;
-	int backwardImplicationLevel = 0;
-	Gate *pFaultyGate = NULL;
-	Gate *pFaultyLine = NULL;					   // pFaultyLine is the gate before the fault (fanin gate of pFaultyGate)
-	bool isOutputFault = (fault.faultyLine_ == 0); // if the fault is SA0 or STR, then set faulty value to D (1/0)
-	Value FaultyValue = (fault.faultType_ == Fault::SA0 || fault.faultType_ == Fault::STR) ? D : B;
+int Atpg::setFaultyGate(Fault& fault) {
+    Value valueTemp;
+    int backwardImplicationLevel = 0;
+    Gate* pFaultyGate = NULL;
+    Gate* pFaultyLine = NULL;                       // pFaultyLine is the gate before the fault (fanin gate of pFaultyGate)
+    bool isOutputFault = (fault.faultyLine_ == 0);  // if the fault is SA0 or STR, then set faulty value to D (1/0)
+    Value FaultyValue = (fault.faultType_ == Fault::SA0 || fault.faultType_ == Fault::STR) ? D : B;
 
-	pFaultyGate = &pCircuit_->circuitGates_[fault.gateID_];
-	// if the fault is input fault, the pFaultyLine is decided by fault.faultyLine_
-	// else pFaultyLine is pFaultyGate
-	if (!isOutputFault)
-	{
-		pFaultyLine = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[fault.faultyLine_ - 1]];
-	}
-	else
-	{
-		pFaultyLine = pFaultyGate;
-	}
+    pFaultyGate = &pCircuit_->circuitGates_[fault.gateID_];
+    // if the fault is input fault, the pFaultyLine is decided by fault.faultyLine_
+    // else pFaultyLine is pFaultyGate
+    if (!isOutputFault) {
+        pFaultyLine = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[fault.faultyLine_ - 1]];
+    } else {
+        pFaultyLine = pFaultyGate;
+    }
 
-	if (!isOutputFault)
-	{
-		if (FaultyValue == D && pFaultyLine->atpgVal_ != L)
-		{
-			pFaultyLine->atpgVal_ = H;
-		}
-		else if (FaultyValue == B && pFaultyLine->atpgVal_ != H)
-		{
-			pFaultyLine->atpgVal_ = L;
-		}
-		else
-		{ // The fault can not propagate to PO
-			return -1;
-		}
+    if (!isOutputFault) {
+        if (FaultyValue == D && pFaultyLine->atpgVal_ != L) {
+            pFaultyLine->atpgVal_ = H;
+        } else if (FaultyValue == B && pFaultyLine->atpgVal_ != H) {
+            pFaultyLine->atpgVal_ = L;
+        } else {  // The fault can not propagate to PO
+            return -1;
+        }
 
-		backtrackImplicatedGateIDs_.push_back(pFaultyLine->gateId_);
+        backtrackImplicatedGateIDs_.push_back(pFaultyLine->gateId_);
 
-		if (pFaultyGate->gateType_ == Gate::AND2 || pFaultyGate->gateType_ == Gate::AND3 || pFaultyGate->gateType_ == Gate::AND4 || pFaultyGate->gateType_ == Gate::NAND2 || pFaultyGate->gateType_ == Gate::NAND3 || pFaultyGate->gateType_ == Gate::NAND4 || pFaultyGate->gateType_ == Gate::NOR2 || pFaultyGate->gateType_ == Gate::NOR3 || pFaultyGate->gateType_ == Gate::NOR4 || pFaultyGate->gateType_ == Gate::OR2 || pFaultyGate->gateType_ == Gate::OR3 || pFaultyGate->gateType_ == Gate::OR4)
-		{
-			// scan all fanin gate of pFaultyGate
-			bool isFaultyGateScanned = false;
-			for (int i = 0; i < pFaultyGate->numFI_; ++i)
-			{
-				Gate *pFaninGate = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[i]];
-				if (pFaninGate != pFaultyLine)
-				{
-					if (pFaninGate->atpgVal_ == X)
-					{
-						pFaninGate->atpgVal_ = pFaultyGate->getInputNonCtrlValue();
-						backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
-					}
-					else if (pFaninGate->atpgVal_ != pFaultyGate->getInputNonCtrlValue())
-					{
-						// If the value has already been set, it should be
-						// non-control value, otherwise the fault can't propagate
-						return -1;
-					}
-				}
-				else
-				{
-					if (isFaultyGateScanned == false)
-					{
-						isFaultyGateScanned = true;
-					}
-					else
-					{
-						return -1; // FAULT_UNTESTABLE FAULT
-					}
-				}
-			}
-			valueTemp = pFaultyGate->isInverse();
-			// find the pFaultyGate output value
-			pFaultyGate->atpgVal_ = cXOR2(valueTemp, FaultyValue);
-			backtrackImplicatedGateIDs_.push_back(pFaultyGate->gateId_);
-		}
-		else if (pFaultyGate->gateType_ == Gate::INV || pFaultyGate->gateType_ == Gate::BUF || pFaultyGate->gateType_ == Gate::PO || pFaultyGate->gateType_ == Gate::PPO)
-		{
-			valueTemp = pFaultyGate->isInverse();
-			pFaultyGate->atpgVal_ = cXOR2(valueTemp, FaultyValue);
-			backtrackImplicatedGateIDs_.push_back(pFaultyGate->gateId_);
-		}
+        if (pFaultyGate->gateType_ == Gate::AND2 || pFaultyGate->gateType_ == Gate::AND3 || pFaultyGate->gateType_ == Gate::AND4 || pFaultyGate->gateType_ == Gate::NAND2 || pFaultyGate->gateType_ == Gate::NAND3 || pFaultyGate->gateType_ == Gate::NAND4 || pFaultyGate->gateType_ == Gate::NOR2 || pFaultyGate->gateType_ == Gate::NOR3 || pFaultyGate->gateType_ == Gate::NOR4 || pFaultyGate->gateType_ == Gate::OR2 || pFaultyGate->gateType_ == Gate::OR3 || pFaultyGate->gateType_ == Gate::OR4) {
+            // scan all fanin gate of pFaultyGate
+            bool isFaultyGateScanned = false;
+            for (int i = 0; i < pFaultyGate->numFI_; ++i) {
+                Gate* pFaninGate = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[i]];
+                if (pFaninGate != pFaultyLine) {
+                    if (pFaninGate->atpgVal_ == X) {
+                        pFaninGate->atpgVal_ = pFaultyGate->getInputNonCtrlValue();
+                        backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
+                    } else if (pFaninGate->atpgVal_ != pFaultyGate->getInputNonCtrlValue()) {
+                        // If the value has already been set, it should be
+                        // non-control value, otherwise the fault can't propagate
+                        return -1;
+                    }
+                } else {
+                    if (isFaultyGateScanned == false) {
+                        isFaultyGateScanned = true;
+                    } else {
+                        return -1;  // FAULT_UNTESTABLE FAULT
+                    }
+                }
+            }
+            valueTemp = pFaultyGate->isInverse();
+            // find the pFaultyGate output value
+            pFaultyGate->atpgVal_ = cXOR2(valueTemp, FaultyValue);
+            backtrackImplicatedGateIDs_.push_back(pFaultyGate->gateId_);
+        } else if (pFaultyGate->gateType_ == Gate::INV || pFaultyGate->gateType_ == Gate::BUF || pFaultyGate->gateType_ == Gate::PO || pFaultyGate->gateType_ == Gate::PPO) {
+            valueTemp = pFaultyGate->isInverse();
+            pFaultyGate->atpgVal_ = cXOR2(valueTemp, FaultyValue);
+            backtrackImplicatedGateIDs_.push_back(pFaultyGate->gateId_);
+        }
 
-		if (pFaultyGate->atpgVal_ != X)
-		{
-			// schedule all the fanout gate of pFaultyGate
-			pushGateFanoutsToEventStack(pFaultyGate->gateId_);
-			gateID_to_valModified_[pFaultyGate->gateId_] = 1;
-		}
+        if (pFaultyGate->atpgVal_ != X) {
+            // schedule all the fanout gate of pFaultyGate
+            pushGateFanoutsToEventStack(pFaultyGate->gateId_);
+            gateID_to_valModified_[pFaultyGate->gateId_] = 1;
+        }
 
-		for (int i = 0; i < pFaultyGate->numFI_; ++i)
-		{
-			Gate *pFaninGate = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[i]];
-			if (pFaninGate->atpgVal_ != X)
-			{
-				// set the backwardImplicationLevel to be maximum of fanin gate's level
-				if (backwardImplicationLevel < pFaninGate->numLevel_)
-				{
-					backwardImplicationLevel = pFaninGate->numLevel_;
-				}
-				// schedule all fanout gates of the fanin gate
-				// pushInputEvents(pFaultyGate->gateId_, i); replaced by following, by wang
-				pushGateToEventStack(pFaultyGate->faninVector_[i]);
-				pushGateFanoutsToEventStack(pFaultyGate->faninVector_[i]);
-			}
-		}
-	}
-	else
-	{ // output fault
-		if ((FaultyValue == D && pFaultyGate->atpgVal_ == L) || (FaultyValue == B && pFaultyGate->atpgVal_ == H))
-		{
-			return -1;
-		}
-		pFaultyGate->atpgVal_ = FaultyValue;
-		backtrackImplicatedGateIDs_.push_back(pFaultyGate->gateId_);
-		// schedule all of fanout gate of the pFaultyGate
-		pushGateFanoutsToEventStack(pFaultyGate->gateId_);
-		// backtrace stops at HEAD LINE
-		if (gateID_to_lineType_[pFaultyGate->gateId_] == HEAD_LINE)
-		{
-			gateID_to_valModified_[pFaultyGate->gateId_] = 1;
-		}
-		else if (pFaultyGate->gateType_ == Gate::INV || pFaultyGate->gateType_ == Gate::BUF || pFaultyGate->gateType_ == Gate::PO || pFaultyGate->gateType_ == Gate::PPO)
-		{
-			Gate *pFaninGate = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[0]];
-			gateID_to_valModified_[pFaultyGate->gateId_] = 1;
+        for (int i = 0; i < pFaultyGate->numFI_; ++i) {
+            Gate* pFaninGate = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[i]];
+            if (pFaninGate->atpgVal_ != X) {
+                // set the backwardImplicationLevel to be maximum of fanin gate's level
+                if (backwardImplicationLevel < pFaninGate->numLevel_) {
+                    backwardImplicationLevel = pFaninGate->numLevel_;
+                }
+                // schedule all fanout gates of the fanin gate
+                // pushInputEvents(pFaultyGate->gateId_, i); replaced by following, by wang
+                pushGateToEventStack(pFaultyGate->faninVector_[i]);
+                pushGateFanoutsToEventStack(pFaultyGate->faninVector_[i]);
+            }
+        }
+    } else {  // output fault
+        if ((FaultyValue == D && pFaultyGate->atpgVal_ == L) || (FaultyValue == B && pFaultyGate->atpgVal_ == H)) {
+            return -1;
+        }
+        pFaultyGate->atpgVal_ = FaultyValue;
+        backtrackImplicatedGateIDs_.push_back(pFaultyGate->gateId_);
+        // schedule all of fanout gate of the pFaultyGate
+        pushGateFanoutsToEventStack(pFaultyGate->gateId_);
+        // backtrace stops at HEAD LINE
+        if (gateID_to_lineType_[pFaultyGate->gateId_] == HEAD_LINE) {
+            gateID_to_valModified_[pFaultyGate->gateId_] = 1;
+        } else if (pFaultyGate->gateType_ == Gate::INV || pFaultyGate->gateType_ == Gate::BUF || pFaultyGate->gateType_ == Gate::PO || pFaultyGate->gateType_ == Gate::PPO) {
+            Gate* pFaninGate = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[0]];
+            gateID_to_valModified_[pFaultyGate->gateId_] = 1;
 
-			Value Val = (FaultyValue == D) ? H : L;
-			valueTemp = pFaultyGate->isInverse();
-			pFaninGate->atpgVal_ = cXOR2(valueTemp, Val);
-			backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
-			pushGateToEventStack(pFaultyGate->faninVector_[0]);
-			pushGateFanoutsToEventStack(pFaultyGate->faninVector_[0]);
+            Value Val = (FaultyValue == D) ? H : L;
+            valueTemp = pFaultyGate->isInverse();
+            pFaninGate->atpgVal_ = cXOR2(valueTemp, Val);
+            backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
+            pushGateToEventStack(pFaultyGate->faninVector_[0]);
+            pushGateFanoutsToEventStack(pFaultyGate->faninVector_[0]);
 
-			if (backwardImplicationLevel < pFaninGate->numLevel_)
-			{
-				backwardImplicationLevel = pFaninGate->numLevel_;
-			}
-		}
-		else if ((FaultyValue == D && pFaultyGate->getOutputCtrlValue() == H) || (FaultyValue == B && pFaultyGate->getOutputCtrlValue() == L))
-		{
-			gateID_to_valModified_[pFaultyGate->gateId_] = 1;
-			// scan all fanin gate of pFaultyGate
-			for (int i = 0; i < pFaultyGate->numFI_; ++i)
-			{
-				Gate *pFaninGate = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[i]];
-				if (pFaninGate->atpgVal_ == X)
-				{
-					pFaninGate->atpgVal_ = pFaultyGate->getInputNonCtrlValue();
-					backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
-					// schedule all fanout gate of the pFaninGate
-					pushGateToEventStack(pFaultyGate->faninVector_[i]);
-					pushGateFanoutsToEventStack(pFaultyGate->faninVector_[i]);
-					if (backwardImplicationLevel < pFaninGate->numLevel_)
-					{
-						backwardImplicationLevel = pFaninGate->numLevel_;
-					}
-				}
-			}
-		}
-		else
-		{
-			pushGateToEventStack(pFaultyGate->gateId_);
-			if (backwardImplicationLevel < pFaultyGate->numLevel_)
-			{
-				backwardImplicationLevel = pFaultyGate->numLevel_;
-			}
-		}
-	}
-	return backwardImplicationLevel;
+            if (backwardImplicationLevel < pFaninGate->numLevel_) {
+                backwardImplicationLevel = pFaninGate->numLevel_;
+            }
+        } else if ((FaultyValue == D && pFaultyGate->getOutputCtrlValue() == H) || (FaultyValue == B && pFaultyGate->getOutputCtrlValue() == L)) {
+            gateID_to_valModified_[pFaultyGate->gateId_] = 1;
+            // scan all fanin gate of pFaultyGate
+            for (int i = 0; i < pFaultyGate->numFI_; ++i) {
+                Gate* pFaninGate = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[i]];
+                if (pFaninGate->atpgVal_ == X) {
+                    pFaninGate->atpgVal_ = pFaultyGate->getInputNonCtrlValue();
+                    backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
+                    // schedule all fanout gate of the pFaninGate
+                    pushGateToEventStack(pFaultyGate->faninVector_[i]);
+                    pushGateFanoutsToEventStack(pFaultyGate->faninVector_[i]);
+                    if (backwardImplicationLevel < pFaninGate->numLevel_) {
+                        backwardImplicationLevel = pFaninGate->numLevel_;
+                    }
+                }
+            }
+        } else {
+            pushGateToEventStack(pFaultyGate->gateId_);
+            if (backwardImplicationLevel < pFaultyGate->numLevel_) {
+                backwardImplicationLevel = pFaultyGate->numLevel_;
+            }
+        }
+    }
+    return backwardImplicationLevel;
 }
 
 // **************************************************************************
@@ -3005,50 +2621,44 @@ int Atpg::setFaultyGate(Fault &fault)
 //            ]
 // Date       [ WYH Ver. 1.0 started 2013/08/17 2023/01/06 ]
 // **************************************************************************
-Fault Atpg::setFreeLineFaultyGate(Gate &gate)
-{
-	int gateID = 0;
-	Gate *pCurrentGate = NULL;
-	std::vector<int> sStack;
-	sStack.push_back(gate.fanoutVector_[0]);
+Fault Atpg::setFreeLineFaultyGate(Gate& gate) {
+    int gateID = 0;
+    Gate* pCurrentGate = NULL;
+    std::vector<int> sStack;
+    sStack.push_back(gate.fanoutVector_[0]);
 
-	while (!sStack.empty())
-	{
-		gateID = vecPop(sStack);
-		pCurrentGate = &pCircuit_->circuitGates_[gateID];
-		Value Val = pCurrentGate->getInputNonCtrlValue();
-		if (Val == X)
-		{
-			Val = L;
-		}
-		for (int i = 0; i < pCurrentGate->numFI_; ++i)
-		{
-			Gate &gFanin = pCircuit_->circuitGates_[pCurrentGate->faninVector_[i]];
-			// set pCurrentGate unknown fanin gate to non-control value
-			if (gFanin.atpgVal_ == X)
-			{
-				gFanin.atpgVal_ = Val;
-				backtrackImplicatedGateIDs_.push_back(gFanin.gateId_);
-			}
-		}
+    while (!sStack.empty()) {
+        gateID = vecPop(sStack);
+        pCurrentGate = &pCircuit_->circuitGates_[gateID];
+        Value Val = pCurrentGate->getInputNonCtrlValue();
+        if (Val == X) {
+            Val = L;
+        }
 
-		if (pCurrentGate->atpgVal_ == X)
-		{
-			// set the value of pCurrentGate by evaluateGoodVal
-			pCurrentGate->atpgVal_ = evaluateGoodVal(*pCurrentGate);
-			backtrackImplicatedGateIDs_.push_back(pCurrentGate->gateId_);
-		}
-		// if the pCurrentGate is FREE LINE, pCurrentGate output gate becomes a new pCurrentGate
-		// until pCurrentGate becomes HEAD LINE
-		if (gateID_to_lineType_[gateID] == FREE_LINE)
-		{
-			sStack.push_back(pCurrentGate->fanoutVector_[0]);
-		}
-	}
-	gateID_to_valModified_[gateID] = 1;
-	pushGateFanoutsToEventStack(gateID);
-	// decide the new fault type according to pCurrentGate value
-	return Fault(gateID, (pCurrentGate->atpgVal_ == D) ? Fault::SA0 : Fault::SA1, 0);
+        for (int i = 0; i < pCurrentGate->numFI_; ++i) {
+            Gate& gFanin = pCircuit_->circuitGates_[pCurrentGate->faninVector_[i]];
+            // set pCurrentGate unknown fanin gate to non-control value
+            if (gFanin.atpgVal_ == X) {
+                gFanin.atpgVal_ = Val;
+                backtrackImplicatedGateIDs_.push_back(gFanin.gateId_);
+            }
+        }
+
+        if (pCurrentGate->atpgVal_ == X) {
+            // set the value of pCurrentGate by evaluateGoodVal
+            pCurrentGate->atpgVal_ = evaluateGoodVal(*pCurrentGate);
+            backtrackImplicatedGateIDs_.push_back(pCurrentGate->gateId_);
+        }
+        // if the pCurrentGate is FREE LINE, pCurrentGate output gate becomes a new pCurrentGate
+        // until pCurrentGate becomes HEAD LINE
+        if (gateID_to_lineType_[gateID] == FREE_LINE) {
+            sStack.push_back(pCurrentGate->fanoutVector_[0]);
+        }
+    }
+    gateID_to_valModified_[gateID] = 1;
+    pushGateFanoutsToEventStack(gateID);
+    // decide the new fault type according to pCurrentGate value
+    return Fault(gateID, (pCurrentGate->atpgVal_ == D) ? Fault::SA0 : Fault::SA1, 0);
 }
 
 // **************************************************************************
@@ -3061,112 +2671,83 @@ Fault Atpg::setFreeLineFaultyGate(Gate &gate)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 last modified 2023/01/06]
 // **************************************************************************
-void Atpg::fanoutFreeBacktrace(Gate *pGate)
-{
-	currentObjectives_.clear();
-	currentObjectives_.reserve(MAX_LIST_SIZE);
-	currentObjectives_.push_back(pGate->gateId_);
+void Atpg::fanoutFreeBacktrace(Gate* pGate) {
+    currentObjectives_.clear();
+    currentObjectives_.reserve(MAX_LIST_SIZE);
+    currentObjectives_.push_back(pGate->gateId_);
 
-	while (!currentObjectives_.empty())
-	{
-		Gate *pGate = &pCircuit_->circuitGates_[vecPop(currentObjectives_)];
+    while (!currentObjectives_.empty()) {
+        Gate* pGate = &pCircuit_->circuitGates_[vecPop(currentObjectives_)];
 
-		if (pGate->gateType_ == Gate::PI || pGate->gateType_ == Gate::PPI || pGate == firstTimeFrameHeadLine_)
-		{
-			continue;
-		}
+        if (pGate->gateType_ == Gate::PI || pGate->gateType_ == Gate::PPI || pGate == firstTimeFrameHeadLine_) {
+            continue;
+        }
 
-		Value vInv = pGate->isInverse();
+        Value vInv = pGate->isInverse();
 
-		if (pGate->gateType_ == Gate::XOR2 || pGate->gateType_ == Gate::XNOR2)
-		{
-			if (&pCircuit_->circuitGates_[pGate->faninVector_[1]] != firstTimeFrameHeadLine_)
-			{
-				if (pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ == X)
-				{
-					pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ = L;
-				}
-				pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_ = cXOR3(pGate->atpgVal_, pGate->isInverse(), pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_);
-			}
-			else
-			{
-				pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ = cXOR3(pGate->atpgVal_, pGate->isInverse(), pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_);
-			}
-			currentObjectives_.push_back(pGate->faninVector_[0]);
-			currentObjectives_.push_back(pGate->faninVector_[1]); // push both input gates into currentObjectives_ list
-		}
-		else if (pGate->gateType_ == Gate::XOR3 || pGate->gateType_ == Gate::XNOR3) // debugged by wang
-		{
-			if (&pCircuit_->circuitGates_[pGate->faninVector_[1]] != firstTimeFrameHeadLine_)
-			{
-				if (pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ == X)
-				{
-					pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ = L;
-				}
-				if (pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_ == X)
-				{
-					pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_ = L;
-				}
-				pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_ = cXOR3(cXOR2(pGate->atpgVal_, pGate->isInverse()), pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_, pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_);
-			}
-			else
-			{
-				pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ = L;
-				pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_ = cXOR3(cXOR2(pGate->atpgVal_, pGate->isInverse()), pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_, pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_);
-			}
-			currentObjectives_.push_back(pGate->faninVector_[0]);
-			currentObjectives_.push_back(pGate->faninVector_[1]);
-			currentObjectives_.push_back(pGate->faninVector_[2]);
-		}
-		else if (pGate->isUnary())
-		{ // if pGate only have one input gate
-			if (&pCircuit_->circuitGates_[pGate->faninVector_[0]] != firstTimeFrameHeadLine_)
-			{
-				pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ = cXOR2(pGate->atpgVal_, vInv);
-			}
-			currentObjectives_.push_back(pGate->faninVector_[0]); // add input gate into currentObjectives_ list
-		}
-		else
-		{
-			Value Val = cXOR2(pGate->atpgVal_, vInv);
-			if (Val == pGate->getInputCtrlValue())
-			{
-				Gate *pMinLevelGate = &pCircuit_->circuitGates_[pGate->minLevelOfFanins_];
-				if (pMinLevelGate != firstTimeFrameHeadLine_)
-				{
-					pMinLevelGate->atpgVal_ = Val;
-					currentObjectives_.push_back(pMinLevelGate->gateId_);
-				}
-				else
-				{
-					Gate *pFaninGate = NULL;
-					for (int i = 0; i < pGate->numFI_; ++i)
-					{
-						pFaninGate = &pCircuit_->circuitGates_[pGate->faninVector_[i]];
-						if (pFaninGate != firstTimeFrameHeadLine_)
-						{
-							break;
-						}
-					}
-					pFaninGate->atpgVal_ = Val;
-					currentObjectives_.push_back(pFaninGate->gateId_);
-				}
-			}
-			else
-			{
-				Gate *pFaninGate = NULL;
-				for (int i = 0; i < pGate->numFI_; ++i)
-				{
-					pFaninGate = &pCircuit_->circuitGates_[pGate->faninVector_[i]];
-					if (pFaninGate->atpgVal_ == X)
-					{
-						pFaninGate->atpgVal_ = Val;
-					}
-					currentObjectives_.push_back(pFaninGate->gateId_);
-				}
-			}
-		}
-	}
+        if (pGate->gateType_ == Gate::XOR2 || pGate->gateType_ == Gate::XNOR2) {
+            if (&pCircuit_->circuitGates_[pGate->faninVector_[1]] != firstTimeFrameHeadLine_) {
+                if (pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ == X) {
+                    pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ = L;
+                }
+                pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_ = cXOR3(pGate->atpgVal_, pGate->isInverse(), pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_);
+            } else {
+                pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ = cXOR3(pGate->atpgVal_, pGate->isInverse(), pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_);
+            }
+            currentObjectives_.push_back(pGate->faninVector_[0]);
+            currentObjectives_.push_back(pGate->faninVector_[1]);                      // push both input gates into currentObjectives_ list
+        } else if (pGate->gateType_ == Gate::XOR3 || pGate->gateType_ == Gate::XNOR3)  // debugged by wang
+        {
+            if (&pCircuit_->circuitGates_[pGate->faninVector_[1]] != firstTimeFrameHeadLine_) {
+                if (pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ == X) {
+                    pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ = L;
+                }
+                if (pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_ == X) {
+                    pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_ = L;
+                }
+                pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_ = cXOR3(cXOR2(pGate->atpgVal_, pGate->isInverse()), pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_, pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_);
+            } else {
+                pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ = L;
+                pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_ = cXOR3(cXOR2(pGate->atpgVal_, pGate->isInverse()), pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_, pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_);
+            }
+            currentObjectives_.push_back(pGate->faninVector_[0]);
+            currentObjectives_.push_back(pGate->faninVector_[1]);
+            currentObjectives_.push_back(pGate->faninVector_[2]);
+        } else if (pGate->isUnary()) {  // if pGate only have one input gate
+            if (&pCircuit_->circuitGates_[pGate->faninVector_[0]] != firstTimeFrameHeadLine_) {
+                pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ = cXOR2(pGate->atpgVal_, vInv);
+            }
+            currentObjectives_.push_back(pGate->faninVector_[0]);  // add input gate into currentObjectives_ list
+        } else {
+            Value Val = cXOR2(pGate->atpgVal_, vInv);
+            if (Val == pGate->getInputCtrlValue()) {
+                Gate* pMinLevelGate = &pCircuit_->circuitGates_[pGate->minLevelOfFanins_];
+                if (pMinLevelGate != firstTimeFrameHeadLine_) {
+                    pMinLevelGate->atpgVal_ = Val;
+                    currentObjectives_.push_back(pMinLevelGate->gateId_);
+                } else {
+                    Gate* pFaninGate = NULL;
+                    for (int i = 0; i < pGate->numFI_; ++i) {
+                        pFaninGate = &pCircuit_->circuitGates_[pGate->faninVector_[i]];
+                        if (pFaninGate != firstTimeFrameHeadLine_) {
+                            break;
+                        }
+                    }
+                    pFaninGate->atpgVal_ = Val;
+                    currentObjectives_.push_back(pFaninGate->gateId_);
+                }
+            } else {
+                Gate* pFaninGate = NULL;
+                for (int i = 0; i < pGate->numFI_; ++i) {
+                    pFaninGate = &pCircuit_->circuitGates_[pGate->faninVector_[i]];
+                    if (pFaninGate->atpgVal_ == X) {
+                        pFaninGate->atpgVal_ = Val;
+                    }
+                    currentObjectives_.push_back(pFaninGate->gateId_);
+                }
+            }
+        }
+    }
 }
 
 // **************************************************************************
@@ -3197,225 +2778,183 @@ void Atpg::fanoutFreeBacktrace(Gate *pGate)
 //            ]
 // Date       [ CKY Ver. 1.0 commented 2013/08/17 last modified 2023/01/06 ]
 // **************************************************************************
-Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int &possibleFinalObjectiveID)
-{
-	int index;
-	int n0, n1, nn1, nn0;
-	Gate *pCurrentObj = NULL;
+Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int& possibleFinalObjectiveID) {
+    int index;
+    int n0, n1, nn1, nn0;
+    Gate* pCurrentObj = NULL;
 
-	// atpgStatus may be INITIAL, CHECK_AND_SELECT, CURRENT_OBJ_DETERMINE, FAN_OBJ_DETERMINE
-	if (atpgStatus == INITIAL)
-	{
-		// LET THE SET OF INITIAL OBJECTIVES BE THE SET OF CURRENT OBJECTIVES
-		initializeForMultipleBacktrace();
-		atpgStatus = CHECK_AND_SELECT; // ready to get into while loop
-	}
+    // atpgStatus may be INITIAL, CHECK_AND_SELECT, CURRENT_OBJ_DETERMINE, FAN_OBJ_DETERMINE
+    if (atpgStatus == INITIAL) {
+        // LET THE SET OF INITIAL OBJECTIVES BE THE SET OF CURRENT OBJECTIVES
+        initializeForMultipleBacktrace();
+        atpgStatus = CHECK_AND_SELECT;  // ready to get into while loop
+    }
 
-	while (true)
-	{
-		Gate *pEasiestInput = NULL;
-		switch (atpgStatus)
-		{
-			case CHECK_AND_SELECT:
-				// IS THE SET OF CURRENT OBJECTIVES EMPTY?
-				if (currentObjectives_.empty())
-				{ // YES
-					// IS THE SET OF FANOUT-POINT OBJECTIVES EMPTY?
-					if (fanoutObjectives_.empty()) // YES
-					{							   // C, NO_CONTRADICTORY
-						return NO_CONTRADICTORY;
-					}
-					else // NO
-					{
-						atpgStatus = FAN_OBJ_DETERMINE;
-					}
-				}
-				else
-				{ // NO
-					// TAKE OUT A CURRENT OBJECTIVE
-					pCurrentObj = &pCircuit_->circuitGates_[vecPop(currentObjectives_)];
-					atpgStatus = CURRENT_OBJ_DETERMINE;
-				}
-				break; // switch break
-			case CURRENT_OBJ_DETERMINE:
-				// IS OBJECTIVE LINE A HEAD LINE?
-				if (gateID_to_lineType_[pCurrentObj->gateId_] == HEAD_LINE)
-				{ // YES
-					// ADD THE CURRENT OBJECTIVE TO THE SET OF HEAD OBJECTIVES
-					headLineObjectives_.push_back(pCurrentObj->gateId_);
-				}
-				else
-				{ // NO
-					// store m_NumOfZero, m_NumOfOne in n0 or n1, depend on
-					// different Gate Type
-					// different Gate return different value, the value used in FindEasiestInput()
-					Value Val = assignBacktraceValue(n0, n1, *pCurrentObj); // get Val,no and n1 of pCurrentObj
+    while (true) {
+        Gate* pEasiestInput = NULL;
+        switch (atpgStatus) {
+            case CHECK_AND_SELECT:
+                // IS THE SET OF CURRENT OBJECTIVES EMPTY?
+                if (currentObjectives_.empty()) {  // YES
+                    // IS THE SET OF FANOUT-POINT OBJECTIVES EMPTY?
+                    if (fanoutObjectives_.empty())  // YES
+                    {                               // C, NO_CONTRADICTORY
+                        return NO_CONTRADICTORY;
+                    } else  // NO
+                    {
+                        atpgStatus = FAN_OBJ_DETERMINE;
+                    }
+                } else {  // NO
+                    // TAKE OUT A CURRENT OBJECTIVE
+                    pCurrentObj = &pCircuit_->circuitGates_[vecPop(currentObjectives_)];
+                    atpgStatus = CURRENT_OBJ_DETERMINE;
+                }
+                break;  // switch break
+            case CURRENT_OBJ_DETERMINE:
+                // IS OBJECTIVE LINE A HEAD LINE?
+                if (gateID_to_lineType_[pCurrentObj->gateId_] == HEAD_LINE) {  // YES
+                    // ADD THE CURRENT OBJECTIVE TO THE SET OF HEAD OBJECTIVES
+                    headLineObjectives_.push_back(pCurrentObj->gateId_);
+                } else {  // NO
+                    // store m_NumOfZero, m_NumOfOne in n0 or n1, depend on
+                    // different Gate Type
+                    // different Gate return different value, the value used in FindEasiestInput()
+                    Value Val = assignBacktraceValue(n0, n1, *pCurrentObj);  // get Val,no and n1 of pCurrentObj
 
-					// FindEasiestInput() in <atpg.cpp>,
-					// return Gate* of the pCurrentObj's fanin gate that is
-					// the easiest gate to control value to Val
-					pEasiestInput = findEasiestInput(pCurrentObj, Val);
+                    // FindEasiestInput() in <atpg.cpp>,
+                    // return Gate* of the pCurrentObj's fanin gate that is
+                    // the easiest gate to control value to Val
+                    pEasiestInput = findEasiestInput(pCurrentObj, Val);
 
-					// add next objectives to current objectives and
-					// calculate n0, n1 by rule1~rule6
-					// rule1~rule6:[Reference paper p4, p5 Fig6
-					for (int i = 0; i < pCurrentObj->numFI_; ++i)
-					{
-						// go through all fan in gate of pCurrentObj
-						Gate *pFaninGate = &pCircuit_->circuitGates_[pCurrentObj->faninVector_[i]];
+                    // add next objectives to current objectives and
+                    // calculate n0, n1 by rule1~rule6
+                    // rule1~rule6:[Reference paper p4, p5 Fig6
+                    for (int i = 0; i < pCurrentObj->numFI_; ++i) {
+                        // go through all fanin gate of pCurrentObj
+                        Gate* pFaninGate = &pCircuit_->circuitGates_[pCurrentObj->faninVector_[i]];
 
-						// ignore the fanin gate that already set value
-						// (not unknown)
-						if (pFaninGate->atpgVal_ != X)
-						{
-							continue;
-						}
+                        // ignore the fanin gate that already set value
+                        // (not unknown)
+                        if (pFaninGate->atpgVal_ != X) {
+                            continue;
+                        }
 
-						// DOES OBJECTIVE LINE FOLLOW A FANOUT-POINT?
-						if (pFaninGate->numFO_ > 1)
-						{ // YES
-							// rule 1 ~ rule 5
-							if (pFaninGate == pEasiestInput)
-							{
-								nn0 = n0;
-								nn1 = n1;
-							}
-							else if (Val == L)
-							{
-								nn0 = 0;
-								nn1 = n1;
-							}
-							else if (Val == H)
-							{
-								nn0 = n0;
-								nn1 = 0;
-							}
-							else
-							{
-								if (n0 > n1)
-								{
-									nn0 = n0;
-									nn1 = n1;
-								}
-								else
-								{
-									nn0 = n1;
-									nn1 = n0;
-								}
-							}
+                        // DOES OBJECTIVE LINE FOLLOW A FANOUT-POINT?
+                        if (pFaninGate->numFO_ > 1) {  // YES
+                            // rule 1 ~ rule 5
+                            if (pFaninGate == pEasiestInput) {
+                                nn0 = n0;
+                                nn1 = n1;
+                            } else if (Val == L) {
+                                nn0 = 0;
+                                nn1 = n1;
+                            } else if (Val == H) {
+                                nn0 = n0;
+                                nn1 = 0;
+                            } else {
+                                if (n0 > n1) {
+                                    nn0 = n0;
+                                    nn1 = n1;
+                                } else {
+                                    nn0 = n1;
+                                    nn1 = n0;
+                                }
+                            }
 
-							if (nn0 > 0 || nn1 > 0)
-							{
-								// first find this fanout point,  add to
-								// Fanout-Point Objectives set
-								if (gateID_to_n0_[pFaninGate->gateId_] == 0 && gateID_to_n1_[pFaninGate->gateId_] == 0)
-								{
-									fanoutObjectives_.push_back(pFaninGate->gateId_);
-								}
+                            if (nn0 > 0 || nn1 > 0) {
+                                // first find this fanout point,  add to
+                                // Fanout-Point Objectives set
+                                if (gateID_to_n0_[pFaninGate->gateId_] == 0 && gateID_to_n1_[pFaninGate->gateId_] == 0) {
+                                    fanoutObjectives_.push_back(pFaninGate->gateId_);
+                                }
 
-								// new value = old value(gateID_to_n0_(),gateID_to_n1_()) + this branch's value (nn0, nn1)
-								// rule6: fanout point's n0, n1 = sum of it's branch's no, n1
-								// int NewZero = gateID_to_n1_[pFaninGate->gateId_] + nn0; removed by wang
-								// int NewOne = gateID_to_n1_[pFaninGate->gateId_] + nn1; removed by wang
-								// ADD n0 AND n1 TO THE CORRESPONDING
-								// modified to safe
-								setGaten0n1(pFaninGate->gateId_, gateID_to_n0_[pFaninGate->gateId_] + nn0, gateID_to_n1_[pFaninGate->gateId_] + nn1);
-								gateIDsToResetAfterBackTrace_.push_back(pFaninGate->gateId_);
-							}
-						}
-						else
-						{ // NO
-							// rule 1 ~ rule 5
-							if (pFaninGate == pEasiestInput)
-							{
-								nn0 = n0;
-								nn1 = n1;
-							}
-							else if (Val == L)
-							{
-								nn0 = 0;
-								nn1 = n1;
-							}
-							else if (Val == H)
-							{
-								nn0 = n0;
-								nn1 = 0;
-							}
-							else
-							{
-								if (n0 > n1)
-								{
-									nn0 = n0;
-									nn1 = n1;
-								}
-								else
-								{
-									nn0 = n1;
-									nn1 = n0;
-								}
-							}
+                                // new value = old value(gateID_to_n0_(),gateID_to_n1_()) + this branch's value (nn0, nn1)
+                                // rule6: fanout point's n0, n1 = sum of it's branch's no, n1
+                                // int NewZero = gateID_to_n1_[pFaninGate->gateId_] + nn0; removed by wang
+                                // int NewOne = gateID_to_n1_[pFaninGate->gateId_] + nn1; removed by wang
+                                // ADD n0 AND n1 TO THE CORRESPONDING
+                                // modified to safe
+                                setGaten0n1(pFaninGate->gateId_, gateID_to_n0_[pFaninGate->gateId_] + nn0, gateID_to_n1_[pFaninGate->gateId_] + nn1);
+                                gateIDsToResetAfterBackTrace_.push_back(pFaninGate->gateId_);
+                            }
+                        } else {  // NO
+                            // rule 1 ~ rule 5
+                            if (pFaninGate == pEasiestInput) {
+                                nn0 = n0;
+                                nn1 = n1;
+                            } else if (Val == L) {
+                                nn0 = 0;
+                                nn1 = n1;
+                            } else if (Val == H) {
+                                nn0 = n0;
+                                nn1 = 0;
+                            } else {
+                                if (n0 > n1) {
+                                    nn0 = n0;
+                                    nn1 = n1;
+                                } else {
+                                    nn0 = n1;
+                                    nn1 = n0;
+                                }
+                            }
 
-							if (nn0 > 0 || nn1 > 0)
-							{
-								// add gate into Current Objective set
-								// BY THE RULES(1)-(5) DETERMINE NEXT OBJECTIVES
-								// AND ADD THEM TO THE SET OF CURRENT OBJECTIVES
-								setGaten0n1(pFaninGate->gateId_, nn0, nn1);
-								gateIDsToResetAfterBackTrace_.push_back(pFaninGate->gateId_);
-								currentObjectives_.push_back(pFaninGate->gateId_);
-							}
-						}
-					}
-				}
-				atpgStatus = CHECK_AND_SELECT;
-				break; // switch break
+                            if (nn0 > 0 || nn1 > 0) {
+                                // add gate into Current Objective set
+                                // BY THE RULES(1)-(5) DETERMINE NEXT OBJECTIVES
+                                // AND ADD THEM TO THE SET OF CURRENT OBJECTIVES
+                                setGaten0n1(pFaninGate->gateId_, nn0, nn1);
+                                gateIDsToResetAfterBackTrace_.push_back(pFaninGate->gateId_);
+                                currentObjectives_.push_back(pFaninGate->gateId_);
+                            }
+                        }
+                    }
+                }
+                atpgStatus = CHECK_AND_SELECT;
+                break;  // switch break
 
-			case FAN_OBJ_DETERMINE:
-				// TAKE OUT A FANOUT-POINT OBJECTIVE p CLOSEST TO A PRIMARY OUTPUT
-				pCurrentObj = findClosestToPO(fanoutObjectives_, index);
+            case FAN_OBJ_DETERMINE:
+                // TAKE OUT A FANOUT-POINT OBJECTIVE p CLOSEST TO A PRIMARY OUTPUT
+                pCurrentObj = findClosestToPO(fanoutObjectives_, index);
 
-				// specified by the index from FanObject
-				vecDelete(fanoutObjectives_, index);
+                // specified by the index from FanObject
+                vecDelete(fanoutObjectives_, index);
 
-				// if value of pCurrent is not X
-				// ignore the Fanout-Point Objective that already set value
-				// (not unknown), back to CHECK_AND_SELECT state
-				if (pCurrentObj->atpgVal_ != X)
-				{
-					atpgStatus = CHECK_AND_SELECT;
-					break; // switch break
-				}
+                // if value of pCurrent is not X
+                // ignore the Fanout-Point Objective that already set value
+                // (not unknown), back to CHECK_AND_SELECT state
+                if (pCurrentObj->atpgVal_ != X) {
+                    atpgStatus = CHECK_AND_SELECT;
+                    break;  // switch break
+                }
 
-				// if fault reach of pCurrent is equal to 1 => reachable
-				// IS p REACHABLE FROM THE FAULT LINE?
-				if (gateID_to_reachableByTargetFault_[pCurrentObj->gateId_] == 1)
-				{ // YES
-					atpgStatus = CURRENT_OBJ_DETERMINE;
-					break; // switch break
-				}
+                // if fault reach of pCurrent is equal to 1 => reachable
+                // IS p REACHABLE FROM THE FAULT LINE?
+                if (gateID_to_reachableByTargetFault_[pCurrentObj->gateId_] == 1) {  // YES
+                    atpgStatus = CURRENT_OBJ_DETERMINE;
+                    break;  // switch break
+                }
 
-				// if one of numOfZero or numOfOne is equal to 0
-				if (!(gateID_to_n0_[pCurrentObj->gateId_] != 0 && gateID_to_n1_[pCurrentObj->gateId_] != 0))
-				{
-					atpgStatus = CURRENT_OBJ_DETERMINE;
-					break; // switch break
-				}
+                // if one of numOfZero or numOfOne is equal to 0
+                if (!(gateID_to_n0_[pCurrentObj->gateId_] != 0 && gateID_to_n1_[pCurrentObj->gateId_] != 0)) {
+                    atpgStatus = CURRENT_OBJ_DETERMINE;
+                    break;  // switch break
+                }
 
-				// if three conditions are not set up, then push back pCurrentObj to finalObject
-				// then terminate Multiple Backtrace procedure
-				// when "a Fanout-Point objective is not reachable from the
-				// fault line" and "both no, n1 of it are nonzero "
-				// return CONTRADICTORY in this situation
-				// Let the Fanout-Point objective to be a Final Objective
-				possibleFinalObjectiveID = pCurrentObj->gateId_;
-				return CONTRADICTORY;
+                // if three conditions are not set up, then push back pCurrentObj to finalObject
+                // then terminate Multiple Backtrace procedure
+                // when "a Fanout-Point objective is not reachable from the
+                // fault line" and "both no, n1 of it are nonzero "
+                // return CONTRADICTORY in this situation
+                // Let the Fanout-Point objective to be a Final Objective
+                possibleFinalObjectiveID = pCurrentObj->gateId_;
+                return CONTRADICTORY;
 
-			default:
-				break;
-		}
-	}
-	// after breaking while loop
-	return NO_CONTRADICTORY;
+            default:
+                break;
+        }
+    }
+    // after breaking while loop
+    return NO_CONTRADICTORY;
 }
 
 // **************************************************************************
@@ -3436,116 +2975,103 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 //            ]
 // Date       [ CKY Ver. 1.0 commented 2013/08/17 last modified 2023/01/06 ]
 // **************************************************************************
-Value Atpg::assignBacktraceValue(int &n0, int &n1, const Gate &gate)
-{
-	int v1;
-	Value val;
-	switch (gate.gateType_)
-	{
-		// when gate is AND type,n0 = numOfZero,n1 = numOfOne
-		case Gate::AND2:
-		case Gate::AND3:
-		case Gate::AND4:
-			n0 = gateID_to_n0_[gate.gateId_];
-			n1 = gateID_to_n1_[gate.gateId_];
-			return L;
+Value Atpg::assignBacktraceValue(int& n0, int& n1, const Gate& gate) {
+    int v1;
+    Value val;
+    switch (gate.gateType_) {
+        // when gate is AND type,n0 = numOfZero,n1 = numOfOne
+        case Gate::AND2:
+        case Gate::AND3:
+        case Gate::AND4:
+            n0 = gateID_to_n0_[gate.gateId_];
+            n1 = gateID_to_n1_[gate.gateId_];
+            return L;
 
-			// when gate is OR type,n0 = numOfZero,n1 = numOfOne
-		case Gate::OR2:
-		case Gate::OR3:
-		case Gate::OR4:
-			// TO-DO homework 04
-			n0 = gateID_to_n0_[gate.gateId_];
-			n1 = gateID_to_n1_[gate.gateId_];
-			return H;
-			// end of TO-DO
+            // when gate is OR type,n0 = numOfZero,n1 = numOfOne
+        case Gate::OR2:
+        case Gate::OR3:
+        case Gate::OR4:
+            // TO-DO homework 04
+            n0 = gateID_to_n0_[gate.gateId_];
+            n1 = gateID_to_n1_[gate.gateId_];
+            return H;
+            // end of TO-DO
 
-			// when gate is NAND type,n0 = numOfOne,n1 = numOfZero
-		case Gate::NAND2:
-		case Gate::NAND3:
-		case Gate::NAND4:
-			n0 = gateID_to_n1_[gate.gateId_];
-			n1 = gateID_to_n0_[gate.gateId_];
-			return L;
+            // when gate is NAND type,n0 = numOfOne,n1 = numOfZero
+        case Gate::NAND2:
+        case Gate::NAND3:
+        case Gate::NAND4:
+            n0 = gateID_to_n1_[gate.gateId_];
+            n1 = gateID_to_n0_[gate.gateId_];
+            return L;
 
-			// when gate is NOR type,n0 = numOfOne,n1 = numOfZero
-		case Gate::NOR2:
-		case Gate::NOR3:
-		case Gate::NOR4:
-			// TO-DO homework 04
-			n0 = gateID_to_n1_[gate.gateId_];
-			n1 = gateID_to_n0_[gate.gateId_];
-			return H;
-			// end of TO-DO
+            // when gate is NOR type,n0 = numOfOne,n1 = numOfZero
+        case Gate::NOR2:
+        case Gate::NOR3:
+        case Gate::NOR4:
+            // TO-DO homework 04
+            n0 = gateID_to_n1_[gate.gateId_];
+            n1 = gateID_to_n0_[gate.gateId_];
+            return H;
+            // end of TO-DO
 
-			// when gate is inverter,n0 = numOfOne,n1 = numOfZero
-		case Gate::INV:
-			n0 = gateID_to_n1_[gate.gateId_];
-			n1 = gateID_to_n0_[gate.gateId_];
-			return X;
+            // when gate is inverter,n0 = numOfOne,n1 = numOfZero
+        case Gate::INV:
+            n0 = gateID_to_n1_[gate.gateId_];
+            n1 = gateID_to_n0_[gate.gateId_];
+            return X;
 
-			// when gate is XOR2 or XNOR2
-		case Gate::XOR2:
-		case Gate::XNOR2:
-			val = pCircuit_->circuitGates_[gate.faninVector_[0]].atpgVal_;
-			if (val == X)
-			{
-				val = pCircuit_->circuitGates_[gate.faninVector_[1]].atpgVal_;
-			}
+            // when gate is XOR2 or XNOR2
+        case Gate::XOR2:
+        case Gate::XNOR2:
+            val = pCircuit_->circuitGates_[gate.faninVector_[0]].atpgVal_;
+            if (val == X) {
+                val = pCircuit_->circuitGates_[gate.faninVector_[1]].atpgVal_;
+            }
 
-			if (val == H)
-			{
-				n0 = gateID_to_n1_[gate.gateId_];
-				n1 = gateID_to_n0_[gate.gateId_];
-			}
-			else
-			{
-				n0 = gateID_to_n0_[gate.gateId_];
-				n1 = gateID_to_n1_[gate.gateId_];
-			}
+            if (val == H) {
+                n0 = gateID_to_n1_[gate.gateId_];
+                n1 = gateID_to_n0_[gate.gateId_];
+            } else {
+                n0 = gateID_to_n0_[gate.gateId_];
+                n1 = gateID_to_n1_[gate.gateId_];
+            }
 
-			if (gate.gateType_ == Gate::XNOR2)
-			{
-				int temp = n0;
-				n0 = n1;
-				n1 = temp;
-			}
-			return X;
+            if (gate.gateType_ == Gate::XNOR2) {
+                int temp = n0;
+                n0 = n1;
+                n1 = temp;
+            }
+            return X;
 
-			// when gate is XOR3 or XNOR3
-		case Gate::XOR3:
-		case Gate::XNOR3:
-			v1 = 0;
-			for (int i = 0; i < gate.numFI_; ++i)
-			{
-				if (pCircuit_->circuitGates_[gate.faninVector_[0]].atpgVal_ == H)
-				{
-					++v1;
-				}
-			}
-			if (v1 == 2)
-			{
-				n0 = gateID_to_n1_[gate.gateId_];
-				n1 = gateID_to_n0_[gate.gateId_];
-			}
-			else
-			{
-				n0 = gateID_to_n0_[gate.gateId_];
-				n1 = gateID_to_n1_[gate.gateId_];
-			}
+            // when gate is XOR3 or XNOR3
+        case Gate::XOR3:
+        case Gate::XNOR3:
+            v1 = 0;
+            for (int i = 0; i < gate.numFI_; ++i) {
+                if (pCircuit_->circuitGates_[gate.faninVector_[0]].atpgVal_ == H) {
+                    ++v1;
+                }
+            }
+            if (v1 == 2) {
+                n0 = gateID_to_n1_[gate.gateId_];
+                n1 = gateID_to_n0_[gate.gateId_];
+            } else {
+                n0 = gateID_to_n0_[gate.gateId_];
+                n1 = gateID_to_n1_[gate.gateId_];
+            }
 
-			if (gate.gateType_ == Gate::XNOR3)
-			{
-				int temp = n0;
-				n0 = n1;
-				n1 = temp;
-			}
-			return X;
-		default:
-			n0 = gateID_to_n0_[gate.gateId_];
-			n1 = gateID_to_n1_[gate.gateId_];
-			return X;
-	}
+            if (gate.gateType_ == Gate::XNOR3) {
+                int temp = n0;
+                n0 = n1;
+                n1 = temp;
+            }
+            return X;
+        default:
+            n0 = gateID_to_n0_[gate.gateId_];
+            n1 = gateID_to_n1_[gate.gateId_];
+            return X;
+    }
 }
 
 // **************************************************************************
@@ -3566,56 +3092,48 @@ Value Atpg::assignBacktraceValue(int &n0, int &n1, const Gate &gate)
 //            ]
 // Date       [ CKY Ver. 1.0 commented 2013/08/17 last modified 2023/01/06 ]
 // **************************************************************************
-void Atpg::initializeForMultipleBacktrace()
-{
-	currentObjectives_ = initialObjectives_; // vector assignment
+void Atpg::initializeForMultipleBacktrace() {
+    currentObjectives_ = initialObjectives_;  // vector assignment
 
-	// go through all current Object size
-	for (const int &currentObjectGateID : currentObjectives_)
-	{
-		// get currentObject gate in pCircuit_ to pGate
-		Gate *pGate = &pCircuit_->circuitGates_[currentObjectGateID];
+    // go through all current Object size
+    for (const int& currentObjectGateID : currentObjectives_) {
+        // get currentObject gate in pCircuit_ to pGate
+        Gate* pGate = &pCircuit_->circuitGates_[currentObjectGateID];
 
-		// if single value of the gate is Low or D', numOfZero=1, numOfOne=0
-		if (pGate->atpgVal_ == L || pGate->atpgVal_ == B)
-		{
-			setGaten0n1(pGate->gateId_, 1, 0);
-		}
-		else if (pGate->atpgVal_ == H || pGate->atpgVal_ == D)
-		{ // if single value of the gate is High or D, numOfZero=0, numOfOne=1
-			setGaten0n1(pGate->gateId_, 0, 1);
-		}
-		else
-		{ // if single value of the gate is X or Z or I, set line number depend on gate type
-			switch (pGate->gateType_)
-			{
-				case Gate::AND2:
-				case Gate::AND3:
-				case Gate::AND4:
-				case Gate::NOR2:
-				case Gate::NOR3:
-				case Gate::NOR4:
-				case Gate::XNOR2:
-				case Gate::XNOR3:
-					setGaten0n1(pGate->gateId_, 0, 1);
-					break;
-				case Gate::OR2:
-				case Gate::OR3:
-				case Gate::OR4:
-				case Gate::NAND2:
-				case Gate::NAND3:
-				case Gate::NAND4:
-				case Gate::XOR2:
-				case Gate::XOR3:
-					setGaten0n1(pGate->gateId_, 1, 0);
-					break;
-				default:
-					break;
-			}
-		}
-		// record reset list
-		gateIDsToResetAfterBackTrace_.push_back(pGate->gateId_);
-	}
+        // if single value of the gate is Low or D', numOfZero=1, numOfOne=0
+        if (pGate->atpgVal_ == L || pGate->atpgVal_ == B) {
+            setGaten0n1(pGate->gateId_, 1, 0);
+        } else if (pGate->atpgVal_ == H || pGate->atpgVal_ == D) {  // if single value of the gate is High or D, numOfZero=0, numOfOne=1
+            setGaten0n1(pGate->gateId_, 0, 1);
+        } else {  // if single value of the gate is X or Z or I, set line number depend on gate type
+            switch (pGate->gateType_) {
+                case Gate::AND2:
+                case Gate::AND3:
+                case Gate::AND4:
+                case Gate::NOR2:
+                case Gate::NOR3:
+                case Gate::NOR4:
+                case Gate::XNOR2:
+                case Gate::XNOR3:
+                    setGaten0n1(pGate->gateId_, 0, 1);
+                    break;
+                case Gate::OR2:
+                case Gate::OR3:
+                case Gate::OR4:
+                case Gate::NAND2:
+                case Gate::NAND3:
+                case Gate::NAND4:
+                case Gate::XOR2:
+                case Gate::XOR3:
+                    setGaten0n1(pGate->gateId_, 1, 0);
+                    break;
+                default:
+                    break;
+            }
+        }
+        // record reset list
+        gateIDsToResetAfterBackTrace_.push_back(pGate->gateId_);
+    }
 }
 
 // **************************************************************************
@@ -3641,57 +3159,46 @@ void Atpg::initializeForMultipleBacktrace()
 //            ]
 // Date       [ CPJ Ver. 1.0 started 2013/08/10 last modified 2023/01/06 ]
 // **************************************************************************
-Gate *Atpg::findEasiestInput(Gate *pGate, Value atpgValOfpGate)
-{
-	// declaration of the return gate pointer
-	Gate *pRetGate = NULL;
-	// easiest input gate's scope(non-select yet)
-	int easyControlVal = INFINITE;
+Gate* Atpg::findEasiestInput(Gate* pGate, Value atpgValOfpGate) {
+    // declaration of the return gate pointer
+    Gate* pRetGate = NULL;
+    // easiest input gate's scope(non-select yet)
+    int easyControlVal = INFINITE;
 
-	// if the fanIn amount is 1, just return the only fanIn
-	if (pGate->gateType_ == Gate::PO || pGate->gateType_ == Gate::PPO ||
-		pGate->gateType_ == Gate::BUF || pGate->gateType_ == Gate::INV)
-	{
-		return &pCircuit_->circuitGates_[pGate->faninVector_[0]];
-	}
+    // if the fanIn amount is 1, just return the only fanIn
+    if (pGate->gateType_ == Gate::PO || pGate->gateType_ == Gate::PPO ||
+        pGate->gateType_ == Gate::BUF || pGate->gateType_ == Gate::INV) {
+        return &pCircuit_->circuitGates_[pGate->faninVector_[0]];
+    }
 
-	if (atpgValOfpGate == L)
-	{
-		// choose the value-undetermined faninGate which has smallest cc0_
-		for (int i = 0; i < pGate->numFI_; ++i)
-		{
-			Gate *pFaninGate = &pCircuit_->circuitGates_[pGate->faninVector_[i]];
-			if (pFaninGate->atpgVal_ != X)
-			{
-				continue;
-			}
+    if (atpgValOfpGate == L) {
+        // choose the value-undetermined faninGate which has smallest cc0_
+        for (int i = 0; i < pGate->numFI_; ++i) {
+            Gate* pFaninGate = &pCircuit_->circuitGates_[pGate->faninVector_[i]];
+            if (pFaninGate->atpgVal_ != X) {
+                continue;
+            }
 
-			if (pFaninGate->cc0_ < easyControlVal)
-			{
-				easyControlVal = pFaninGate->cc0_;
-				pRetGate = pFaninGate;
-			}
-		}
-	}
-	else
-	{
-		// choose the value-undetermined faninGate which has smallest cc1_
-		for (int i = 0; i < pGate->numFI_; ++i)
-		{
-			Gate *pFaninGate = &pCircuit_->circuitGates_[pGate->faninVector_[i]];
-			if (pFaninGate->atpgVal_ != X)
-			{
-				continue;
-			}
+            if (pFaninGate->cc0_ < easyControlVal) {
+                easyControlVal = pFaninGate->cc0_;
+                pRetGate = pFaninGate;
+            }
+        }
+    } else {
+        // choose the value-undetermined faninGate which has smallest cc1_
+        for (int i = 0; i < pGate->numFI_; ++i) {
+            Gate* pFaninGate = &pCircuit_->circuitGates_[pGate->faninVector_[i]];
+            if (pFaninGate->atpgVal_ != X) {
+                continue;
+            }
 
-			if (pFaninGate->cc1_ < easyControlVal)
-			{
-				easyControlVal = pFaninGate->cc1_;
-				pRetGate = pFaninGate;
-			}
-		}
-	}
-	return pRetGate;
+            if (pFaninGate->cc1_ < easyControlVal) {
+                easyControlVal = pFaninGate->cc1_;
+                pRetGate = pFaninGate;
+            }
+        }
+    }
+    return pRetGate;
 }
 
 // **************************************************************************
@@ -3709,26 +3216,22 @@ Gate *Atpg::findEasiestInput(Gate *pGate, Value atpgValOfpGate)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 last modified 2023/01/06 ]
 // *************************************************************************
-Gate *Atpg::findClosestToPO(std::vector<int> &gateVec, int &index)
-{
-	Gate *pCloseGate = NULL;
+Gate* Atpg::findClosestToPO(std::vector<int>& gateVec, int& index) {
+    Gate* pCloseGate = NULL;
 
-	if (gateVec.empty())
-	{
-		return NULL;
-	}
+    if (gateVec.empty()) {
+        return NULL;
+    }
 
-	pCloseGate = &pCircuit_->circuitGates_[gateVec.back()];
-	index = gateVec.size() - 1;
-	for (int i = gateVec.size() - 2; i >= 0; --i)
-	{
-		if (pCircuit_->circuitGates_[gateVec[i]].depthFromPo_ < pCloseGate->depthFromPo_)
-		{
-			index = i;
-			pCloseGate = &pCircuit_->circuitGates_[gateVec[i]];
-		}
-	}
-	return pCloseGate;
+    pCloseGate = &pCircuit_->circuitGates_[gateVec.back()];
+    index = gateVec.size() - 1;
+    for (int i = gateVec.size() - 2; i >= 0; --i) {
+        if (pCircuit_->circuitGates_[gateVec[i]].depthFromPo_ < pCloseGate->depthFromPo_) {
+            index = i;
+            pCloseGate = &pCircuit_->circuitGates_[gateVec[i]];
+        }
+    }
+    return pCloseGate;
 }
 
 // **************************************************************************
@@ -3759,48 +3262,38 @@ Gate *Atpg::findClosestToPO(std::vector<int> &gateVec, int &index)
 //            ]
 // Date       [ KOREAL Ver. 1.0 started 2013/08/15 last modifed 2023/01/06 ]
 // **************************************************************************
-Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetGateAtpgVal(Gate *pGate)
-{
-	gateID_to_valModified_[pGate->gateId_] = 0;
+Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetGateAtpgVal(Gate* pGate) {
+    gateID_to_valModified_[pGate->gateId_] = 0;
+    if (gateID_to_lineType_[pGate->gateId_] == HEAD_LINE) {
+        // pGate is head line, set modify and return FORWARD
+        gateID_to_valModified_[pGate->gateId_] = 1;
+        return FORWARD;
+    }
 
-	if (gateID_to_lineType_[pGate->gateId_] == HEAD_LINE)
-	{
-		// pGate is head line, set modify and return FORWARD
-		gateID_to_valModified_[pGate->gateId_] = 1;
-		return FORWARD;
-	}
+    // pGate is the faulty gate, see FaultEvaluation();
+    if (pGate->gateId_ == currentTargetFault_.gateID_) {
+        return evaluateAndSetFaultyGateAtpgVal(pGate);
+    }
 
-	// pGate is the faulty gate, see FaultEvaluation();
-	if (pGate->gateId_ == currentTargetFault_.gateID_)
-	{
-		return evaluateAndSetFaultyGateAtpgVal(pGate);
-	}
+    // pGate is not the faulty gate, see evaluateGoodVal(*pGate)
+    Value Val = evaluateGoodVal(*pGate);
 
-	// pGate is not the faulty gate, see evaluateGoodVal(*pGate)
-	Value Val = evaluateGoodVal(*pGate);
-
-	if (pGate->atpgVal_ == Val)
-	{
-		if (Val != X)
-		{ // Good value is equal to the gate output, return FORWARD
-			gateID_to_valModified_[pGate->gateId_] = 1;
-		}
-		return FORWARD;
-	}
-	else if (pGate->atpgVal_ == X)
-	{
-		// set it to the evaluated value.
-		pGate->atpgVal_ = Val;
-		backtrackImplicatedGateIDs_.push_back(pGate->gateId_);
-		gateID_to_valModified_[pGate->gateId_] = 1;
-		pushGateFanoutsToEventStack(pGate->gateId_);
-		return FORWARD;
-	}
-	else if (Val != X)
-	{ // Good value is different to the gate output, return CONFLICT
-		return CONFLICT;
-	}
-	return doOneGateBackwardImplication(pGate); // atpgVal != X && Val == X
+    if (pGate->atpgVal_ == Val) {
+        if (Val != X) {  // Good value is equal to the gate output, return FORWARD
+            gateID_to_valModified_[pGate->gateId_] = 1;
+        }
+        return FORWARD;
+    } else if (pGate->atpgVal_ == X) {
+        // set it to the evaluated value.
+        pGate->atpgVal_ = Val;
+        backtrackImplicatedGateIDs_.push_back(pGate->gateId_);
+        gateID_to_valModified_[pGate->gateId_] = 1;
+        pushGateFanoutsToEventStack(pGate->gateId_);
+        return FORWARD;
+    } else if (Val != X) {  // Good value is different to the gate output, return CONFLICT
+        return CONFLICT;
+    }
+    return doOneGateBackwardImplication(pGate);  // atpgVal != X && Val == X
 }
 
 // **************************************************************************
@@ -3832,116 +3325,90 @@ Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetGateAtpgVal(Gate *pGate)
 //            ]
 // Date       [ KOREAL Ver. 1.0 started 2013/08/15 last modified 2023/01/06 ]
 // **************************************************************************
-Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetFaultyGateAtpgVal(Gate *pGate)
-{
-	// get the evaluated value of pGate.
-	Value Val = evaluateFaultyVal(*pGate);
-	int ImpPtr = 0;
-	if (Val == X)
-	{ // The evaluated value is X, means the init faulty objective has not achieved yet.
-		if (pGate->atpgVal_ != X)
-		{
-			int NumOfX = 0;
+Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetFaultyGateAtpgVal(Gate* pGate) {
+    // get the evaluated value of pGate.
+    Value Val = evaluateFaultyVal(*pGate);
+    int ImpPtr = 0;
+    if (Val == X) {  // The evaluated value is X, means the init faulty objective has not achieved yet.
+        if (pGate->atpgVal_ != X) {
+            int NumOfX = 0;
 
-			// Count NumOfX, the amount of fanIn whose value is X.
-			// set ImpPtr to be one of the fanIn whose value is X.
-			for (int i = 0; i < pGate->numFI_; ++i)
-			{
-				Gate *pFaninGate = &pCircuit_->circuitGates_[pGate->faninVector_[i]];
-				if (pFaninGate->atpgVal_ == X)
-				{
-					++NumOfX;
-					ImpPtr = i;
-				}
-			}
-			if (NumOfX == 1)
-			{ // The fanin has X value can be set to impl. value
+            // Count NumOfX, the amount of fanIn whose value is X.
+            // set ImpPtr to be one of the fanIn whose value is X.
+            for (int i = 0; i < pGate->numFI_; ++i) {
+                Gate* pFaninGate = &pCircuit_->circuitGates_[pGate->faninVector_[i]];
+                if (pFaninGate->atpgVal_ == X) {
+                    ++NumOfX;
+                    ImpPtr = i;
+                }
+            }
+            if (NumOfX == 1) {  // The fanin has X value can be set to impl. value
 
-				// ImpVal is the pGate pImpGate value
-				Value ImpVal;
+                // ImpVal is the pGate pImpGate value
+                Value ImpVal;
 
-				// pImpGate is the pGate's fanIn whose value is X.
-				Gate *pImpGate = &pCircuit_->circuitGates_[pGate->faninVector_[ImpPtr]];
+                // pImpGate is the pGate's fanIn whose value is X.
+                Gate* pImpGate = &pCircuit_->circuitGates_[pGate->faninVector_[ImpPtr]];
 
-				// set ImpVal if pGate is not XOR or XNOR
-				if (pGate->atpgVal_ == D)
-				{
-					ImpVal = H;
-				}
-				else if (pGate->atpgVal_ == B)
-				{
-					ImpVal = L;
-				}
-				else
-				{
-					ImpVal = pGate->atpgVal_;
-				}
+                // set ImpVal if pGate is not XOR or XNOR
+                if (pGate->atpgVal_ == D) {
+                    ImpVal = H;
+                } else if (pGate->atpgVal_ == B) {
+                    ImpVal = L;
+                } else {
+                    ImpVal = pGate->atpgVal_;
+                }
 
-				// set ImpVal if pGate is XOR2 or XNOR2
-				if (pGate->gateType_ == Gate::XOR2 || pGate->gateType_ == Gate::XNOR2)
-				{
-					Value temp = (ImpPtr == 0) ? pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_ : pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_;
-					ImpVal = cXOR2(ImpVal, temp);
-				}
-				// set ImpVal if pGate is XOR3 or XNOR3
-				if (pGate->gateType_ == Gate::XOR3 || pGate->gateType_ == Gate::XNOR3)
-				{
-					Value temp;
-					if (ImpPtr == 0)
-					{
-						temp = cXOR2(pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_, pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_);
-					}
-					else if (ImpPtr == 1)
-					{
-						temp = cXOR2(pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_, pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_);
-					}
-					else
-					{
-						temp = cXOR2(pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_, pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_);
-					}
-					ImpVal = cXOR2(ImpVal, temp);
-				}
+                // set ImpVal if pGate is XOR2 or XNOR2
+                if (pGate->gateType_ == Gate::XOR2 || pGate->gateType_ == Gate::XNOR2) {
+                    Value temp = (ImpPtr == 0) ? pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_ : pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_;
+                    ImpVal = cXOR2(ImpVal, temp);
+                }
+                // set ImpVal if pGate is XOR3 or XNOR3
+                if (pGate->gateType_ == Gate::XOR3 || pGate->gateType_ == Gate::XNOR3) {
+                    Value temp;
+                    if (ImpPtr == 0) {
+                        temp = cXOR2(pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_, pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_);
+                    } else if (ImpPtr == 1) {
+                        temp = cXOR2(pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_, pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_);
+                    } else {
+                        temp = cXOR2(pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_, pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_);
+                    }
+                    ImpVal = cXOR2(ImpVal, temp);
+                }
 
-				// if pGate is an inverse function, ImpVal = NOT(ImpVal)
-				Value isInv = pGate->isInverse();
-				ImpVal = cXOR2(ImpVal, isInv);
+                // if pGate is an inverse function, ImpVal = NOT(ImpVal)
+                Value isInv = pGate->isInverse();
+                ImpVal = cXOR2(ImpVal, isInv);
 
-				// set modify and the final value of pImpGate
-				gateID_to_valModified_[pGate->gateId_] = 1;
-				pImpGate->atpgVal_ = ImpVal;
+                // set modify and the final value of pImpGate
+                gateID_to_valModified_[pGate->gateId_] = 1;
+                pImpGate->atpgVal_ = ImpVal;
 
-				// backward setting
-				// pushInputEvents(pGate->gateId_, ImpPtr);
-				pushGateToEventStack(pGate->faninVector_[ImpPtr]);
-				pushGateFanoutsToEventStack(pGate->faninVector_[ImpPtr]);
-				backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
+                // backward setting
+                // pushInputEvents(pGate->gateId_, ImpPtr);
+                pushGateToEventStack(pGate->faninVector_[ImpPtr]);
+                pushGateFanoutsToEventStack(pGate->faninVector_[ImpPtr]);
+                backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
 
-				return BACKWARD;
-			}
-			else
-			{
-				unjustifiedGateIDs_.push_back(pGate->gateId_);
-			}
-		}
-	}
-	else if (pGate->atpgVal_ == Val)
-	{ // The initial faulty objective has already been achieved
-		gateID_to_valModified_[pGate->gateId_] = 1;
-	}
-	else if (pGate->atpgVal_ == X)
-	{
-		// if pGate's value is unknown, set pGate's value
-		gateID_to_valModified_[pGate->gateId_] = 1;
-		pGate->atpgVal_ = Val;
-		// forward setting
-		pushGateFanoutsToEventStack(pGate->gateId_);
-		backtrackImplicatedGateIDs_.push_back(pGate->gateId_);
-	}
-	else
-	{
-		return CONFLICT; // If the evaluated value is different from current value, return CONFLICT.
-	}
-	return FORWARD;
+                return BACKWARD;
+            } else {
+                unjustifiedGateIDs_.push_back(pGate->gateId_);
+            }
+        }
+    } else if (pGate->atpgVal_ == Val) {  // The initial faulty objective has already been achieved
+        gateID_to_valModified_[pGate->gateId_] = 1;
+    } else if (pGate->atpgVal_ == X) {
+        // if pGate's value is unknown, set pGate's value
+        gateID_to_valModified_[pGate->gateId_] = 1;
+        pGate->atpgVal_ = Val;
+        // forward setting
+        pushGateFanoutsToEventStack(pGate->gateId_);
+        backtrackImplicatedGateIDs_.push_back(pGate->gateId_);
+    } else {
+        return CONFLICT;  // If the evaluated value is different from current value, return CONFLICT.
+    }
+    return FORWARD;
 }
 
 // **************************************************************************
@@ -3963,40 +3430,33 @@ Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetFaultyGateAtpgVal(Gate *pGate)
 //            ]
 // Date       [ started 2020/07/08    last modified 2023/01/06 ]
 // **************************************************************************
-void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatternProcessor, FaultPtrList &originalFaultList)
-{
-	for (Fault *pFault : originalFaultList)
-	{
-		pFault->detection_ = 0;
-		if (pFault->faultState_ == Fault::DT)
-		{
-			pFault->faultState_ = Fault::UD;
-		}
-	}
+void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor* pPatternProcessor, FaultPtrList& originalFaultList) {
+    for (Fault* pFault : originalFaultList) {
+        pFault->detection_ = 0;
+        if (pFault->faultState_ == Fault::DT) {
+            pFault->faultState_ = Fault::UD;
+        }
+    }
 
-	std::vector<Pattern> tmp = pPatternProcessor->patternVector_;
-	pPatternProcessor->patternVector_.clear();
+    std::vector<Pattern> tmp = pPatternProcessor->patternVector_;
+    pPatternProcessor->patternVector_.clear();
 
-	// Perform reverse fault simulation
-	int leftFaultCount = originalFaultList.size();
-	for (std::vector<Pattern>::reverse_iterator rit = tmp.rbegin(); rit != tmp.rend(); ++rit)
-	{
-		pSimulator_->parallelFaultFaultSimWithOnePattern((*rit), originalFaultList);
-		if (leftFaultCount > originalFaultList.size())
-		{
-			leftFaultCount = originalFaultList.size();
-			pPatternProcessor->patternVector_.push_back((*rit));
-		}
-		else if (leftFaultCount < originalFaultList.size())
-		{
-			std::cerr << "Bug: staticTestCompressionByReverseFaultSimulation() unexpected behavior\n";
-			std::cin.get();
-		}
-		// else
-		// {
-		// 	delete (*rit);
-		// }
-	}
+    // Perform reverse fault simulation
+    int leftFaultCount = originalFaultList.size();
+    for (std::vector<Pattern>::reverse_iterator rit = tmp.rbegin(); rit != tmp.rend(); ++rit) {
+        pSimulator_->parallelFaultFaultSimWithOnePattern((*rit), originalFaultList);
+        if (leftFaultCount > originalFaultList.size()) {
+            leftFaultCount = originalFaultList.size();
+            pPatternProcessor->patternVector_.push_back((*rit));
+        } else if (leftFaultCount < originalFaultList.size()) {
+            std::cerr << "Bug: staticTestCompressionByReverseFaultSimulation() unexpected behavior\n";
+            std::cin.get();
+        }
+        // else
+        // {
+        // 	delete (*rit);
+        // }
+    }
 }
 
 // **************************************************************************
@@ -4022,120 +3482,98 @@ void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatt
 //            ]
 // Date       [ WYH Ver. 1.0 started 2013/08/17 ]
 // **************************************************************************
-int Atpg::setUpFirstTimeFrame(Fault &fault)
-{ // NE
-	int backwardImplicationLevel = 0;
-	Gate *pFaultyGate = NULL;
-	Gate *pFaultyLine = NULL;
-	bool isOutputFault = (fault.faultyLine_ == 0);
-	Value FaultyValue = (fault.faultType_ == Fault::STR) ? L : H;
-	Value valueTemp;
+int Atpg::setUpFirstTimeFrame(Fault& fault) {  // NE
+    int backwardImplicationLevel = 0;
+    Gate* pFaultyGate = NULL;
+    Gate* pFaultyLine = NULL;
+    bool isOutputFault = (fault.faultyLine_ == 0);
+    Value FaultyValue = (fault.faultType_ == Fault::STR) ? L : H;
+    Value valueTemp;
 
-	pFaultyGate = &pCircuit_->circuitGates_[fault.gateID_ - pCircuit_->numGate_];
+    pFaultyGate = &pCircuit_->circuitGates_[fault.gateID_ - pCircuit_->numGate_];
 
-	if (!isOutputFault)
-	{
-		pFaultyLine = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[fault.faultyLine_ - 1]];
-	}
-	else
-	{
-		pFaultyLine = pFaultyGate;
-	}
+    std::cout << pCircuit_->pNetlist_->getTop()->getCell(pCircuit_->circuitGates_[fault.gateID_].cellId_)->name_ << " " << pCircuit_->pNetlist_->getTop()->getCell(pFaultyGate->cellId_)->name_ << std::endl;
 
-	if (gateID_to_lineType_[pFaultyLine->gateId_] == FREE_LINE)
-	{
-		if ((FaultyValue == H && pFaultyLine->atpgVal_ == L) || (FaultyValue == L && pFaultyLine->atpgVal_ == H))
-		{
-			return -1;
-		}
+    if (!isOutputFault) {
+        pFaultyLine = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[fault.faultyLine_ - 1]];
+    } else {
+        pFaultyLine = pFaultyGate;
+    }
 
-		pFaultyLine->atpgVal_ = FaultyValue;
-		backtrackImplicatedGateIDs_.push_back(pFaultyLine->gateId_);
-		fanoutFreeBacktrace(pFaultyLine);
-		Gate *gTemp = pFaultyLine;
-		Gate *gNext = NULL;
-		// propagate until meet the other LINE
-		do
-		{
-			gNext = &pCircuit_->circuitGates_[gTemp->fanoutVector_[0]];
-			if (!gNext->isUnary() && (gNext->getOutputCtrlValue() == X || gTemp->atpgVal_ != gNext->getInputCtrlValue()))
-			{
-				break;
-			}
-			gNext->atpgVal_ = cXOR2(gNext->isInverse(), gTemp->atpgVal_);
-			gTemp = gNext;
-		} while (gateID_to_lineType_[gTemp->gateId_] == FREE_LINE);
+    if (gateID_to_lineType_[pFaultyLine->gateId_] == FREE_LINE) {
+        if ((FaultyValue == H && pFaultyLine->atpgVal_ == L) || (FaultyValue == L && pFaultyLine->atpgVal_ == H)) {
+            return -1;
+        }
 
-		if (gateID_to_lineType_[gTemp->gateId_] == HEAD_LINE)
-		{
-			gateID_to_valModified_[gTemp->gateId_] = 1;
-			backtrackImplicatedGateIDs_.push_back(gTemp->gateId_);
-			pushGateFanoutsToEventStack(gTemp->gateId_);
-		}
-		firstTimeFrameHeadLine_ = gTemp;
-	}
-	else
-	{
-		if ((FaultyValue == H && pFaultyLine->atpgVal_ == L) || (FaultyValue == L && pFaultyLine->atpgVal_ == H))
-		{
-			return -1;
-		}
+        pFaultyLine->atpgVal_ = FaultyValue;
+        backtrackImplicatedGateIDs_.push_back(pFaultyLine->gateId_);
+        fanoutFreeBacktrace(pFaultyLine);
+        Gate* gTemp = pFaultyLine;
+        Gate* gNext = NULL;
+        // propagate until meet the other LINE
+        do {
+            gNext = &pCircuit_->circuitGates_[gTemp->fanoutVector_[0]];
+            if (!gNext->isUnary() && (gNext->getOutputCtrlValue() == X || gTemp->atpgVal_ != gNext->getInputCtrlValue())) {
+                break;
+            }
+            gNext->atpgVal_ = cXOR2(gNext->isInverse(), gTemp->atpgVal_);
+            gTemp = gNext;
+        } while (gateID_to_lineType_[gTemp->gateId_] == FREE_LINE);
 
-		pFaultyLine->atpgVal_ = FaultyValue;
-		backtrackImplicatedGateIDs_.push_back(pFaultyLine->gateId_);
-		pushGateFanoutsToEventStack(pFaultyLine->gateId_);
+        if (gateID_to_lineType_[gTemp->gateId_] == HEAD_LINE) {
+            gateID_to_valModified_[gTemp->gateId_] = 1;
+            backtrackImplicatedGateIDs_.push_back(gTemp->gateId_);
+            pushGateFanoutsToEventStack(gTemp->gateId_);
+        }
+        firstTimeFrameHeadLine_ = gTemp;
+    } else {
+        if ((FaultyValue == H && pFaultyLine->atpgVal_ == L) || (FaultyValue == L && pFaultyLine->atpgVal_ == H)) {
+            return -1;
+        }
 
-		if (gateID_to_lineType_[pFaultyLine->gateId_] == HEAD_LINE)
-		{
-			gateID_to_valModified_[pFaultyLine->gateId_] = 1;
-		}
-		else if (pFaultyLine->gateType_ == Gate::INV || pFaultyLine->gateType_ == Gate::BUF || pFaultyLine->gateType_ == Gate::PO || pFaultyLine->gateType_ == Gate::PPO)
-		{
-			Gate *pFaninGate = &pCircuit_->circuitGates_[pFaultyLine->faninVector_[0]];
-			gateID_to_valModified_[pFaultyLine->gateId_] = 1;
+        pFaultyLine->atpgVal_ = FaultyValue;
+        backtrackImplicatedGateIDs_.push_back(pFaultyLine->gateId_);
+        pushGateFanoutsToEventStack(pFaultyLine->gateId_);
 
-			Value Val = FaultyValue == H ? H : L;
-			valueTemp = pFaultyLine->isInverse();
-			pFaninGate->atpgVal_ = cXOR2(valueTemp, Val);
-			backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
-			pushGateToEventStack(pFaultyLine->faninVector_[0]);
-			pushGateFanoutsToEventStack(pFaultyLine->faninVector_[0]);
-			if (backwardImplicationLevel < pFaninGate->numLevel_)
-			{
-				backwardImplicationLevel = pFaninGate->numLevel_;
-			}
-		}
-		else if ((FaultyValue == H && pFaultyLine->getOutputCtrlValue() == H) || (FaultyValue == L && pFaultyLine->getOutputCtrlValue() == L))
-		{
-			gateID_to_valModified_[pFaultyLine->gateId_] = 1;
-			for (int i = 0; i < pFaultyLine->numFI_; ++i)
-			{
-				Gate *pFaninGate = &pCircuit_->circuitGates_[pFaultyLine->faninVector_[i]];
-				// if the value has not been set, then set it to non-control value
-				if (pFaninGate->atpgVal_ == X)
-				{
-					pFaninGate->atpgVal_ = pFaultyLine->getInputNonCtrlValue();
-					backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
-					pushGateToEventStack(pFaultyLine->faninVector_[i]);
-					pushGateFanoutsToEventStack(pFaultyLine->faninVector_[i]);
-					// set the backwardImplicationLevel to be maximum of fanin gate's level
-					if (backwardImplicationLevel < pFaninGate->numLevel_)
-					{
-						backwardImplicationLevel = pFaninGate->numLevel_;
-					}
-				}
-			}
-		}
-		else
-		{
-			pushGateToEventStack(pFaultyLine->gateId_);
-			if (backwardImplicationLevel < pFaultyLine->numLevel_)
-			{
-				backwardImplicationLevel = pFaultyLine->numLevel_;
-			}
-		}
-	}
-	return backwardImplicationLevel;
+        if (gateID_to_lineType_[pFaultyLine->gateId_] == HEAD_LINE) {
+            gateID_to_valModified_[pFaultyLine->gateId_] = 1;
+        } else if (pFaultyLine->gateType_ == Gate::INV || pFaultyLine->gateType_ == Gate::BUF || pFaultyLine->gateType_ == Gate::PO || pFaultyLine->gateType_ == Gate::PPO) {
+            Gate* pFaninGate = &pCircuit_->circuitGates_[pFaultyLine->faninVector_[0]];
+            gateID_to_valModified_[pFaultyLine->gateId_] = 1;
+
+            Value Val = FaultyValue == H ? H : L;
+            valueTemp = pFaultyLine->isInverse();
+            pFaninGate->atpgVal_ = cXOR2(valueTemp, Val);
+            backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
+            pushGateToEventStack(pFaultyLine->faninVector_[0]);
+            pushGateFanoutsToEventStack(pFaultyLine->faninVector_[0]);
+            if (backwardImplicationLevel < pFaninGate->numLevel_) {
+                backwardImplicationLevel = pFaninGate->numLevel_;
+            }
+        } else if ((FaultyValue == H && pFaultyLine->getOutputCtrlValue() == H) || (FaultyValue == L && pFaultyLine->getOutputCtrlValue() == L)) {
+            gateID_to_valModified_[pFaultyLine->gateId_] = 1;
+            for (int i = 0; i < pFaultyLine->numFI_; ++i) {
+                Gate* pFaninGate = &pCircuit_->circuitGates_[pFaultyLine->faninVector_[i]];
+                // if the value has not been set, then set it to non-control value
+                if (pFaninGate->atpgVal_ == X) {
+                    pFaninGate->atpgVal_ = pFaultyLine->getInputNonCtrlValue();
+                    backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
+                    pushGateToEventStack(pFaultyLine->faninVector_[i]);
+                    pushGateFanoutsToEventStack(pFaultyLine->faninVector_[i]);
+                    // set the backwardImplicationLevel to be maximum of fanin gate's level
+                    if (backwardImplicationLevel < pFaninGate->numLevel_) {
+                        backwardImplicationLevel = pFaninGate->numLevel_;
+                    }
+                }
+            }
+        } else {
+            pushGateToEventStack(pFaultyLine->gateId_);
+            if (backwardImplicationLevel < pFaultyLine->numLevel_) {
+                backwardImplicationLevel = pFaultyLine->numLevel_;
+            }
+        }
+    }
+    return backwardImplicationLevel;
 }
 
 // **************************************************************************
@@ -4148,17 +3586,14 @@ int Atpg::setUpFirstTimeFrame(Fault &fault)
 //            ]
 // Date       [ started 2020/07/07    last modified 2020/07/07 ]
 // **************************************************************************
-void Atpg::checkLevelInfo()
-{
-	for (int i = 0; i < pCircuit_->totalGate_; ++i)
-	{
-		Gate &gate = pCircuit_->circuitGates_[i];
-		if (gate.numLevel_ >= pCircuit_->totalLvl_)
-		{
-			std::cerr << "checkLevelInfo found that at least one gate.numLevel_ is greater than pCircuit_->totalLvl_\n";
-			std::cin.get();
-		}
-	}
+void Atpg::checkLevelInfo() {
+    for (int i = 0; i < pCircuit_->totalGate_; ++i) {
+        Gate& gate = pCircuit_->circuitGates_[i];
+        if (gate.numLevel_ >= pCircuit_->totalLvl_) {
+            std::cerr << "checkLevelInfo found that at least one gate.numLevel_ is greater than pCircuit_->totalLvl_\n";
+            std::cin.get();
+        }
+    }
 }
 
 // **************************************************************************
@@ -4170,299 +3605,268 @@ void Atpg::checkLevelInfo()
 //            ]
 // Date       [ started 2020/07/04    last modified 2020/07/04 ]
 // **************************************************************************
-std::string Atpg::getValStr(Value val)
-{
-	std::string valStr;
-	switch (val)
-	{
-		case H:
-			valStr = "H";
-			break;
-		case L:
-			valStr = "L";
-			break;
-		case D:
-			valStr = "D";
-			break;
-		case B:
-			valStr = "B";
-			break;
-		case X:
-			valStr = "X";
-			break;
-		default:
-			valStr = "Error";
-			break;
-	}
-	return valStr;
+std::string Atpg::getValStr(Value val) {
+    std::string valStr;
+    switch (val) {
+        case H:
+            valStr = "H";
+            break;
+        case L:
+            valStr = "L";
+            break;
+        case D:
+            valStr = "D";
+            break;
+        case B:
+            valStr = "B";
+            break;
+        case X:
+            valStr = "X";
+            break;
+        default:
+            valStr = "Error";
+            break;
+    }
+    return valStr;
 }
 
 // TODO comment by wang
-void Atpg::calSCOAP()
-{
-	// cc0, cc1 and co default is 0, check if is changed before
-	for (int gateID = 0; gateID < pCircuit_->totalGate_; ++gateID)
-	{
-		Gate &gate = pCircuit_->circuitGates_[gateID];
-		if (gate.cc0_ != 0)
-		{
-			std::cerr << "cc0_ is not -1\n";
-			std::cin.get();
-		}
-		if (gate.cc1_ != 0)
-		{
-			std::cerr << "cc1_ is not -1\n";
-			std::cin.get();
-		}
-		if (gate.co_ != 0)
-		{
-			std::cerr << "co_ is not -1\n";
-			std::cin.get();
-		}
-	}
+void Atpg::calSCOAP() {
+    // cc0, cc1 and co default is 0, check if is changed before
+    for (int gateID = 0; gateID < pCircuit_->totalGate_; ++gateID) {
+        Gate& gate = pCircuit_->circuitGates_[gateID];
+        if (gate.cc0_ != 0) {
+            std::cerr << "cc0_ is not -1\n";
+            std::cin.get();
+        }
+        if (gate.cc1_ != 0) {
+            std::cerr << "cc1_ is not -1\n";
+            std::cin.get();
+        }
+        if (gate.co_ != 0) {
+            std::cerr << "co_ is not -1\n";
+            std::cin.get();
+        }
+    }
 
-	// array for xor2, xor3, xnor2, xnor3
-	// xor2 xnor2 : {00,01,10,11}
-	// xor3 xnor3 : {000, 001, 010, 011, 100, 101, 110, 111}
-	int xorcc[8] = {0};
-	Gate gateInputs[3];
+    // array for xor2, xor3, xnor2, xnor3
+    // xor2 xnor2 : {00,01,10,11}
+    // xor3 xnor3 : {000, 001, 010, 011, 100, 101, 110, 111}
+    int xorcc[8] = {0};
+    Gate gateInputs[3];
 
-	// calculate cc0 and cc1 starting from PI and PPI
-	for (int gateID = 0; gateID < pCircuit_->totalGate_; ++gateID)
-	{
-		Gate &gate = pCircuit_->circuitGates_[gateID];
-		switch (gate.gateType_)
-		{
-			case Gate::PPI:
-			case Gate::PI:
-				gate.cc0_ = 1;
-				gate.cc1_ = 1;
-				break;
-			case Gate::PO:
-			case Gate::PPO:
-			case Gate::BUF:
-				gate.cc0_ = pCircuit_->circuitGates_[gate.faninVector_[0]].cc0_;
-				gate.cc1_ = pCircuit_->circuitGates_[gate.faninVector_[0]].cc1_;
-				break;
-			case Gate::INV:
-				gate.cc0_ = pCircuit_->circuitGates_[gate.faninVector_[0]].cc1_ + 1;
-				gate.cc1_ = pCircuit_->circuitGates_[gate.faninVector_[0]].cc0_ + 1;
-				break;
-			case Gate::AND2:
-			case Gate::AND3:
-			case Gate::AND4:
-				for (int j = 0; j < gate.numFI_; ++j)
-				{
-					Gate &gateInput = pCircuit_->circuitGates_[gate.faninVector_[j]];
-					if (j == 0 || (gateInput.cc0_ < gate.cc0_))
-					{
-						gate.cc0_ = gateInput.cc0_;
-					}
-					gate.cc1_ += gateInput.cc1_;
-				}
-				++gate.cc1_;
-				++gate.cc0_;
-				break;
-			case Gate::NAND2:
-			case Gate::NAND3:
-			case Gate::NAND4:
-				for (int j = 0; j < gate.numFI_; ++j)
-				{
-					Gate &gateInput = pCircuit_->circuitGates_[gate.faninVector_[j]];
-					if (j == 0 || (gateInput.cc0_ < gate.cc1_))
-					{
-						gate.cc1_ = gateInput.cc0_;
-					}
-					gate.cc0_ += gateInput.cc1_;
-				}
-				++gate.cc0_;
-				++gate.cc1_;
-				break;
-			case Gate::OR2:
-			case Gate::OR3:
-			case Gate::OR4:
-				for (int j = 0; j < gate.numFI_; ++j)
-				{
-					Gate &gateInput = pCircuit_->circuitGates_[gate.faninVector_[j]];
-					if (j == 0 || (gateInput.cc1_ < gate.cc1_))
-					{
-						gate.cc1_ = gateInput.cc1_;
-					}
-					gate.cc0_ += gateInput.cc0_;
-				}
-				++gate.cc0_;
-				++gate.cc1_;
-				break;
-			case Gate::NOR2:
-			case Gate::NOR3:
-			case Gate::NOR4:
-				for (int j = 0; j < gate.numFI_; ++j)
-				{
-					Gate &gateInput = pCircuit_->circuitGates_[gate.faninVector_[j]];
-					if (j == 0 || (gateInput.cc1_ < gate.cc0_))
-					{
-						gate.cc0_ = gateInput.cc1_;
-					}
-					gate.cc1_ += gateInput.cc0_;
-				}
-				++gate.cc0_;
-				++gate.cc1_;
-				break;
-			case Gate::XOR2:
-				gateInputs[0] = pCircuit_->circuitGates_[gate.faninVector_[0]];
-				gateInputs[1] = pCircuit_->circuitGates_[gate.faninVector_[1]];
-				xorcc[0] = gateInputs[0].cc0_ + gateInputs[1].cc0_;
-				xorcc[1] = gateInputs[0].cc0_ + gateInputs[1].cc1_;
-				xorcc[2] = gateInputs[0].cc1_ + gateInputs[1].cc0_;
-				xorcc[3] = gateInputs[0].cc1_ + gateInputs[1].cc1_;
-				gate.cc0_ = std::min(xorcc[0], xorcc[3]);
-				gate.cc1_ = std::min(xorcc[1], xorcc[2]);
-				++gate.cc0_;
-				++gate.cc1_;
-				break;
-			case Gate::XOR3:
-				gateInputs[0] = pCircuit_->circuitGates_[gate.faninVector_[0]];
-				gateInputs[1] = pCircuit_->circuitGates_[gate.faninVector_[1]];
-				gateInputs[2] = pCircuit_->circuitGates_[gate.faninVector_[2]];
-				xorcc[0] = gateInputs[0].cc0_ + gateInputs[1].cc0_ + gateInputs[2].cc0_;
-				xorcc[1] = gateInputs[0].cc0_ + gateInputs[1].cc0_ + gateInputs[2].cc1_;
-				xorcc[2] = gateInputs[0].cc0_ + gateInputs[1].cc1_ + gateInputs[2].cc0_;
-				xorcc[3] = gateInputs[0].cc0_ + gateInputs[1].cc1_ + gateInputs[2].cc1_;
-				xorcc[4] = gateInputs[0].cc1_ + gateInputs[1].cc0_ + gateInputs[2].cc0_;
-				xorcc[5] = gateInputs[0].cc1_ + gateInputs[1].cc0_ + gateInputs[2].cc1_;
-				xorcc[6] = gateInputs[0].cc1_ + gateInputs[1].cc1_ + gateInputs[2].cc0_;
-				xorcc[7] = gateInputs[0].cc1_ + gateInputs[1].cc1_ + gateInputs[2].cc1_;
-				gate.cc0_ = std::min(xorcc[0], xorcc[7]);
-				for (int j = 1; j < 7; ++j)
-				{
-					if (j == 1 || xorcc[j] < gate.cc1_)
-					{
-						gate.cc1_ = xorcc[j];
-					}
-				}
-				++gate.cc0_;
-				++gate.cc1_;
-				break;
-			case Gate::XNOR2:
-				gateInputs[0] = pCircuit_->circuitGates_[gate.faninVector_[0]];
-				gateInputs[1] = pCircuit_->circuitGates_[gate.faninVector_[1]];
-				xorcc[0] = gateInputs[0].cc0_ + gateInputs[1].cc0_;
-				xorcc[1] = gateInputs[0].cc0_ + gateInputs[1].cc1_;
-				xorcc[2] = gateInputs[0].cc1_ + gateInputs[1].cc0_;
-				xorcc[3] = gateInputs[0].cc1_ + gateInputs[1].cc1_;
-				gate.cc0_ = std::min(xorcc[1], xorcc[2]);
-				gate.cc1_ = std::min(xorcc[0], xorcc[3]);
-				++gate.cc0_;
-				++gate.cc1_;
-				break;
-			case Gate::XNOR3:
-				gateInputs[0] = pCircuit_->circuitGates_[gate.faninVector_[0]];
-				gateInputs[1] = pCircuit_->circuitGates_[gate.faninVector_[1]];
-				gateInputs[2] = pCircuit_->circuitGates_[gate.faninVector_[2]];
-				xorcc[0] = gateInputs[0].cc0_ + gateInputs[1].cc0_ + gateInputs[2].cc0_;
-				xorcc[1] = gateInputs[0].cc0_ + gateInputs[1].cc0_ + gateInputs[2].cc1_;
-				xorcc[2] = gateInputs[0].cc0_ + gateInputs[1].cc1_ + gateInputs[2].cc0_;
-				xorcc[3] = gateInputs[0].cc0_ + gateInputs[1].cc1_ + gateInputs[2].cc1_;
-				xorcc[4] = gateInputs[0].cc1_ + gateInputs[1].cc0_ + gateInputs[2].cc0_;
-				xorcc[5] = gateInputs[0].cc1_ + gateInputs[1].cc0_ + gateInputs[2].cc1_;
-				xorcc[6] = gateInputs[0].cc1_ + gateInputs[1].cc1_ + gateInputs[2].cc0_;
-				xorcc[7] = gateInputs[0].cc1_ + gateInputs[1].cc1_ + gateInputs[2].cc1_;
-				gate.cc1_ = std::min(xorcc[0], xorcc[7]);
-				for (int j = 1; j < 7; ++j)
-				{
-					if (j == 1 || xorcc[j] < gate.cc1_)
-					{
-						gate.cc0_ = xorcc[j];
-					}
-				}
-				++gate.cc0_;
-				++gate.cc1_;
-				break;
-			default:
-				std::cerr << "Bug: reach switch case default while calculating cc0_, cc1_";
-				std::cin.get();
-				break;
-		}
-	}
+    // calculate cc0 and cc1 starting from PI and PPI
+    for (int gateID = 0; gateID < pCircuit_->totalGate_; ++gateID) {
+        Gate& gate = pCircuit_->circuitGates_[gateID];
+        switch (gate.gateType_) {
+            case Gate::PPI:
+            case Gate::PI:
+                gate.cc0_ = 1;
+                gate.cc1_ = 1;
+                break;
+            case Gate::PO:
+            case Gate::PPO:
+            case Gate::BUF:
+                gate.cc0_ = pCircuit_->circuitGates_[gate.faninVector_[0]].cc0_;
+                gate.cc1_ = pCircuit_->circuitGates_[gate.faninVector_[0]].cc1_;
+                break;
+            case Gate::INV:
+                gate.cc0_ = pCircuit_->circuitGates_[gate.faninVector_[0]].cc1_ + 1;
+                gate.cc1_ = pCircuit_->circuitGates_[gate.faninVector_[0]].cc0_ + 1;
+                break;
+            case Gate::AND2:
+            case Gate::AND3:
+            case Gate::AND4:
+                for (int j = 0; j < gate.numFI_; ++j) {
+                    Gate& gateInput = pCircuit_->circuitGates_[gate.faninVector_[j]];
+                    if (j == 0 || (gateInput.cc0_ < gate.cc0_)) {
+                        gate.cc0_ = gateInput.cc0_;
+                    }
+                    gate.cc1_ += gateInput.cc1_;
+                }
+                ++gate.cc1_;
+                ++gate.cc0_;
+                break;
+            case Gate::NAND2:
+            case Gate::NAND3:
+            case Gate::NAND4:
+                for (int j = 0; j < gate.numFI_; ++j) {
+                    Gate& gateInput = pCircuit_->circuitGates_[gate.faninVector_[j]];
+                    if (j == 0 || (gateInput.cc0_ < gate.cc1_)) {
+                        gate.cc1_ = gateInput.cc0_;
+                    }
+                    gate.cc0_ += gateInput.cc1_;
+                }
+                ++gate.cc0_;
+                ++gate.cc1_;
+                break;
+            case Gate::OR2:
+            case Gate::OR3:
+            case Gate::OR4:
+                for (int j = 0; j < gate.numFI_; ++j) {
+                    Gate& gateInput = pCircuit_->circuitGates_[gate.faninVector_[j]];
+                    if (j == 0 || (gateInput.cc1_ < gate.cc1_)) {
+                        gate.cc1_ = gateInput.cc1_;
+                    }
+                    gate.cc0_ += gateInput.cc0_;
+                }
+                ++gate.cc0_;
+                ++gate.cc1_;
+                break;
+            case Gate::NOR2:
+            case Gate::NOR3:
+            case Gate::NOR4:
+                for (int j = 0; j < gate.numFI_; ++j) {
+                    Gate& gateInput = pCircuit_->circuitGates_[gate.faninVector_[j]];
+                    if (j == 0 || (gateInput.cc1_ < gate.cc0_)) {
+                        gate.cc0_ = gateInput.cc1_;
+                    }
+                    gate.cc1_ += gateInput.cc0_;
+                }
+                ++gate.cc0_;
+                ++gate.cc1_;
+                break;
+            case Gate::XOR2:
+                gateInputs[0] = pCircuit_->circuitGates_[gate.faninVector_[0]];
+                gateInputs[1] = pCircuit_->circuitGates_[gate.faninVector_[1]];
+                xorcc[0] = gateInputs[0].cc0_ + gateInputs[1].cc0_;
+                xorcc[1] = gateInputs[0].cc0_ + gateInputs[1].cc1_;
+                xorcc[2] = gateInputs[0].cc1_ + gateInputs[1].cc0_;
+                xorcc[3] = gateInputs[0].cc1_ + gateInputs[1].cc1_;
+                gate.cc0_ = std::min(xorcc[0], xorcc[3]);
+                gate.cc1_ = std::min(xorcc[1], xorcc[2]);
+                ++gate.cc0_;
+                ++gate.cc1_;
+                break;
+            case Gate::XOR3:
+                gateInputs[0] = pCircuit_->circuitGates_[gate.faninVector_[0]];
+                gateInputs[1] = pCircuit_->circuitGates_[gate.faninVector_[1]];
+                gateInputs[2] = pCircuit_->circuitGates_[gate.faninVector_[2]];
+                xorcc[0] = gateInputs[0].cc0_ + gateInputs[1].cc0_ + gateInputs[2].cc0_;
+                xorcc[1] = gateInputs[0].cc0_ + gateInputs[1].cc0_ + gateInputs[2].cc1_;
+                xorcc[2] = gateInputs[0].cc0_ + gateInputs[1].cc1_ + gateInputs[2].cc0_;
+                xorcc[3] = gateInputs[0].cc0_ + gateInputs[1].cc1_ + gateInputs[2].cc1_;
+                xorcc[4] = gateInputs[0].cc1_ + gateInputs[1].cc0_ + gateInputs[2].cc0_;
+                xorcc[5] = gateInputs[0].cc1_ + gateInputs[1].cc0_ + gateInputs[2].cc1_;
+                xorcc[6] = gateInputs[0].cc1_ + gateInputs[1].cc1_ + gateInputs[2].cc0_;
+                xorcc[7] = gateInputs[0].cc1_ + gateInputs[1].cc1_ + gateInputs[2].cc1_;
+                gate.cc0_ = std::min(xorcc[0], xorcc[7]);
+                for (int j = 1; j < 7; ++j) {
+                    if (j == 1 || xorcc[j] < gate.cc1_) {
+                        gate.cc1_ = xorcc[j];
+                    }
+                }
+                ++gate.cc0_;
+                ++gate.cc1_;
+                break;
+            case Gate::XNOR2:
+                gateInputs[0] = pCircuit_->circuitGates_[gate.faninVector_[0]];
+                gateInputs[1] = pCircuit_->circuitGates_[gate.faninVector_[1]];
+                xorcc[0] = gateInputs[0].cc0_ + gateInputs[1].cc0_;
+                xorcc[1] = gateInputs[0].cc0_ + gateInputs[1].cc1_;
+                xorcc[2] = gateInputs[0].cc1_ + gateInputs[1].cc0_;
+                xorcc[3] = gateInputs[0].cc1_ + gateInputs[1].cc1_;
+                gate.cc0_ = std::min(xorcc[1], xorcc[2]);
+                gate.cc1_ = std::min(xorcc[0], xorcc[3]);
+                ++gate.cc0_;
+                ++gate.cc1_;
+                break;
+            case Gate::XNOR3:
+                gateInputs[0] = pCircuit_->circuitGates_[gate.faninVector_[0]];
+                gateInputs[1] = pCircuit_->circuitGates_[gate.faninVector_[1]];
+                gateInputs[2] = pCircuit_->circuitGates_[gate.faninVector_[2]];
+                xorcc[0] = gateInputs[0].cc0_ + gateInputs[1].cc0_ + gateInputs[2].cc0_;
+                xorcc[1] = gateInputs[0].cc0_ + gateInputs[1].cc0_ + gateInputs[2].cc1_;
+                xorcc[2] = gateInputs[0].cc0_ + gateInputs[1].cc1_ + gateInputs[2].cc0_;
+                xorcc[3] = gateInputs[0].cc0_ + gateInputs[1].cc1_ + gateInputs[2].cc1_;
+                xorcc[4] = gateInputs[0].cc1_ + gateInputs[1].cc0_ + gateInputs[2].cc0_;
+                xorcc[5] = gateInputs[0].cc1_ + gateInputs[1].cc0_ + gateInputs[2].cc1_;
+                xorcc[6] = gateInputs[0].cc1_ + gateInputs[1].cc1_ + gateInputs[2].cc0_;
+                xorcc[7] = gateInputs[0].cc1_ + gateInputs[1].cc1_ + gateInputs[2].cc1_;
+                gate.cc1_ = std::min(xorcc[0], xorcc[7]);
+                for (int j = 1; j < 7; ++j) {
+                    if (j == 1 || xorcc[j] < gate.cc1_) {
+                        gate.cc0_ = xorcc[j];
+                    }
+                }
+                ++gate.cc0_;
+                ++gate.cc1_;
+                break;
+            default:
+                std::cerr << "Bug: reach switch case default while calculating cc0_, cc1_";
+                std::cin.get();
+                break;
+        }
+    }
 
-	// calculate co_ starting from PO and PP
-	for (int gateID = 0; gateID < pCircuit_->totalGate_; ++gateID)
-	{
-		Gate &gate = pCircuit_->circuitGates_[gateID];
-		switch (gate.gateType_)
-		{
-			case Gate::PO:
-			case Gate::PPO:
-				gate.co_ = 0;
-				break;
-			case Gate::PPI:
-			case Gate::PI:
-			case Gate::BUF:
-				for (int j = 0; j < gate.numFO_; ++j)
-				{
-					if (j == 0 || pCircuit_->circuitGates_[gate.fanoutVector_[j]].co_ < gate.co_)
-					{
-						gate.co_ = pCircuit_->circuitGates_[gate.fanoutVector_[j]].co_;
-					}
-				}
-				break;
-			case Gate::INV:
-				gate.co_ = pCircuit_->circuitGates_[gate.fanoutVector_[0]].co_ + 1;
-				break;
-			case Gate::AND2:
-			case Gate::AND3:
-			case Gate::AND4:
-			case Gate::NAND2:
-			case Gate::NAND3:
-			case Gate::NAND4:
-				gate.co_ = pCircuit_->circuitGates_[gate.fanoutVector_[0]].co_ + 1;
-				for (int j = 0; j < pCircuit_->circuitGates_[gate.fanoutVector_[0]].numFI_; ++j)
-				{
-					if (pCircuit_->circuitGates_[gate.fanoutVector_[0]].faninVector_[j] != gateID)
-					{
-						Gate &gateSibling = pCircuit_->circuitGates_[pCircuit_->circuitGates_[gate.fanoutVector_[0]].faninVector_[j]];
-						gate.co_ += gateSibling.cc1_;
-					}
-				}
-				break;
-			case Gate::OR2:
-			case Gate::OR3:
-			case Gate::OR4:
-			case Gate::NOR2:
-			case Gate::NOR3:
-			case Gate::NOR4:
-				gate.co_ = pCircuit_->circuitGates_[gate.fanoutVector_[0]].co_ + 1;
-				for (int j = 0; j < pCircuit_->circuitGates_[gate.fanoutVector_[0]].numFI_; ++j)
-				{
-					if (pCircuit_->circuitGates_[gate.fanoutVector_[0]].faninVector_[j] != gateID)
-					{
-						Gate &gateSibling = pCircuit_->circuitGates_[pCircuit_->circuitGates_[gate.fanoutVector_[0]].faninVector_[j]];
-						gate.co_ += gateSibling.cc0_;
-					}
-				}
-				break;
-			case Gate::XOR2:
-			case Gate::XNOR2:
-			case Gate::XOR3:
-			case Gate::XNOR3:
-				gate.co_ = pCircuit_->circuitGates_[gate.fanoutVector_[0]].co_ + 1;
-				for (int j = 0; j < pCircuit_->circuitGates_[gate.fanoutVector_[0]].numFI_; ++j)
-				{
-					Gate &gateSibling = pCircuit_->circuitGates_[pCircuit_->circuitGates_[gate.fanoutVector_[0]].faninVector_[j]];
-					if (pCircuit_->circuitGates_[gate.fanoutVector_[0]].faninVector_[j] != gateID)
-					{
-						gate.co_ += std::min(gateSibling.cc0_, gateSibling.cc1_);
-					}
-				}
-				break;
-			default:
-				std::cerr << "Bug: reach switch case default while calculating co_";
-				std::cin.get();
-				break;
-		}
-	}
+    // calculate co_ starting from PO and PP
+    for (int gateID = 0; gateID < pCircuit_->totalGate_; ++gateID) {
+        Gate& gate = pCircuit_->circuitGates_[gateID];
+        switch (gate.gateType_) {
+            case Gate::PO:
+            case Gate::PPO:
+                gate.co_ = 0;
+                break;
+            case Gate::PPI:
+            case Gate::PI:
+            case Gate::BUF:
+                for (int j = 0; j < gate.numFO_; ++j) {
+                    if (j == 0 || pCircuit_->circuitGates_[gate.fanoutVector_[j]].co_ < gate.co_) {
+                        gate.co_ = pCircuit_->circuitGates_[gate.fanoutVector_[j]].co_;
+                    }
+                }
+                break;
+            case Gate::INV:
+                gate.co_ = pCircuit_->circuitGates_[gate.fanoutVector_[0]].co_ + 1;
+                break;
+            case Gate::AND2:
+            case Gate::AND3:
+            case Gate::AND4:
+            case Gate::NAND2:
+            case Gate::NAND3:
+            case Gate::NAND4:
+                gate.co_ = pCircuit_->circuitGates_[gate.fanoutVector_[0]].co_ + 1;
+                for (int j = 0; j < pCircuit_->circuitGates_[gate.fanoutVector_[0]].numFI_; ++j) {
+                    if (pCircuit_->circuitGates_[gate.fanoutVector_[0]].faninVector_[j] != gateID) {
+                        Gate& gateSibling = pCircuit_->circuitGates_[pCircuit_->circuitGates_[gate.fanoutVector_[0]].faninVector_[j]];
+                        gate.co_ += gateSibling.cc1_;
+                    }
+                }
+                break;
+            case Gate::OR2:
+            case Gate::OR3:
+            case Gate::OR4:
+            case Gate::NOR2:
+            case Gate::NOR3:
+            case Gate::NOR4:
+                gate.co_ = pCircuit_->circuitGates_[gate.fanoutVector_[0]].co_ + 1;
+                for (int j = 0; j < pCircuit_->circuitGates_[gate.fanoutVector_[0]].numFI_; ++j) {
+                    if (pCircuit_->circuitGates_[gate.fanoutVector_[0]].faninVector_[j] != gateID) {
+                        Gate& gateSibling = pCircuit_->circuitGates_[pCircuit_->circuitGates_[gate.fanoutVector_[0]].faninVector_[j]];
+                        gate.co_ += gateSibling.cc0_;
+                    }
+                }
+                break;
+            case Gate::XOR2:
+            case Gate::XNOR2:
+            case Gate::XOR3:
+            case Gate::XNOR3:
+                gate.co_ = pCircuit_->circuitGates_[gate.fanoutVector_[0]].co_ + 1;
+                for (int j = 0; j < pCircuit_->circuitGates_[gate.fanoutVector_[0]].numFI_; ++j) {
+                    Gate& gateSibling = pCircuit_->circuitGates_[pCircuit_->circuitGates_[gate.fanoutVector_[0]].faninVector_[j]];
+                    if (pCircuit_->circuitGates_[gate.fanoutVector_[0]].faninVector_[j] != gateID) {
+                        gate.co_ += std::min(gateSibling.cc0_, gateSibling.cc1_);
+                    }
+                }
+                break;
+            default:
+                std::cerr << "Bug: reach switch case default while calculating co_";
+                std::cin.get();
+                break;
+        }
+    }
 
-	return;
+    return;
 }
 
 // **************************************************************************
@@ -4475,23 +3879,19 @@ void Atpg::calSCOAP()
 //            ]
 // Date       [ started 2020/07/04    last modified 2020/07/04 ]
 // **************************************************************************
-void Atpg::testClearFaultEffect(FaultPtrList &faultListToTest)
-{
-	for (Fault *pFault : faultListToTest)
-	{
-		generateSinglePatternOnTargetFault(*pFault, false);
-		clearAllFaultEffectByEvaluation();
+void Atpg::testClearFaultEffect(FaultPtrList& faultListToTest) {
+    for (Fault* pFault : faultListToTest) {
+        generateSinglePatternOnTargetFault(*pFault, false);
+        clearAllFaultEffectByEvaluation();
 
-		for (int i = 0; i < pCircuit_->totalGate_; ++i)
-		{
-			Gate &gate = pCircuit_->circuitGates_[i];
-			if ((gate.atpgVal_ == D) || (gate.atpgVal_ == B))
-			{
-				std::cerr << "testClearFaultEffect found bug" << std::endl;
-				std::cin.get();
-			}
-		}
-	}
+        for (int i = 0; i < pCircuit_->totalGate_; ++i) {
+            Gate& gate = pCircuit_->circuitGates_[i];
+            if ((gate.atpgVal_ == D) || (gate.atpgVal_ == B)) {
+                std::cerr << "testClearFaultEffect found bug" << std::endl;
+                std::cin.get();
+            }
+        }
+    }
 }
 
 // **************************************************************************
@@ -4504,9 +3904,8 @@ void Atpg::testClearFaultEffect(FaultPtrList &faultListToTest)
 //            ]
 // Date       [ started 2020/07/07    last modified 2020/07/07 ]
 // **************************************************************************
-void Atpg::resetIsInEventStack()
-{
-	std::fill(isInEventStack_.begin(), isInEventStack_.end(), 0);
+void Atpg::resetIsInEventStack() {
+    std::fill(isInEventStack_.begin(), isInEventStack_.end(), 0);
 }
 
 // **************************************************************************
@@ -4518,13 +3917,11 @@ void Atpg::resetIsInEventStack()
 //            ]
 // Date       [ HKY Ver. 1.0 started 2014/09/01 ]
 // **************************************************************************
-void Atpg::XFill(PatternProcessor *pPatternProcessor)
-{
-	for (int i = 0; i < (int)pPatternProcessor->patternVector_.size(); ++i)
-	{
-		randomFill(pPatternProcessor->patternVector_[i]);
-		pSimulator_->assignPatternToCircuitInputs(pPatternProcessor->patternVector_.at(i));
-		pSimulator_->goodSim();
-		writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.at(i));
-	}
+void Atpg::XFill(PatternProcessor* pPatternProcessor) {
+    for (int i = 0; i < (int)pPatternProcessor->patternVector_.size(); ++i) {
+        randomFill(pPatternProcessor->patternVector_[i]);
+        pSimulator_->assignPatternToCircuitInputs(pPatternProcessor->patternVector_.at(i));
+        pSimulator_->goodSim();
+        writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.at(i));
+    }
 }
