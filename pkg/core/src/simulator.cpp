@@ -22,39 +22,33 @@ using namespace CoreNs;
 //            ]
 // Date       [ Ver. 1.0 started 2014/08/14 last modified 2023/01/06 ]
 // **************************************************************************
-void Simulator::eventFaultSim()
-{
-	for (int i = 0; i < pCircuit_->totalLvl_; ++i)
-	{
-		while (!events_[i].empty())
-		{
-			int gateID = events_[i].top(); // Get gate's ID.
-			events_[i].pop();
-			processed_[gateID] = 0;
-			faultyValueEvaluation(gateID);
-			recoverGates_[numRecover_] = gateID; // Record gate's ID for later recovering.
-			++numRecover_;
+void Simulator::eventFaultSim() {
+    for (int i = 0; i < pCircuit_->totalLvl_; ++i) {
+        while (!events_[i].empty()) {
+            int gateID = events_[i].top();  // Get gate's ID.
+            events_[i].pop();
+            processed_[gateID] = 0;
+            faultyValueEvaluation(gateID);
+            recoverGates_[numRecover_] = gateID;  // Record gate's ID for later recovering.
+            ++numRecover_;
 
-			// Check whether faulty value and good value are equal.
-			bool faultyEqualGood = pCircuit_->circuitGates_[gateID].faultSimLow_ == pCircuit_->circuitGates_[gateID].goodSimLow_ && pCircuit_->circuitGates_[gateID].faultSimHigh_ == pCircuit_->circuitGates_[gateID].goodSimHigh_;
-			if (faultyEqualGood)
-			{
-				continue;
-			}
+            // Check whether faulty value and good value are equal.
+            bool faultyEqualGood = pCircuit_->circuitGates_[gateID].faultSimLow_ == pCircuit_->circuitGates_[gateID].goodSimLow_ && pCircuit_->circuitGates_[gateID].faultSimHigh_ == pCircuit_->circuitGates_[gateID].goodSimHigh_;
+            if (faultyEqualGood) {
+                continue;
+            }
 
-			// If not equal and flag = false(0), set flag true(1).
-			for (int j = 0; j < pCircuit_->circuitGates_[gateID].numFO_; ++j)
-			{
-				int fanoutGateID = pCircuit_->circuitGates_[gateID].fanoutVector_[j];
-				if (processed_[fanoutGateID])
-				{
-					continue;
-				}
-				events_[pCircuit_->circuitGates_[fanoutGateID].numLevel_].push(fanoutGateID);
-				processed_[fanoutGateID] = 1;
-			}
-		}
-	}
+            // If not equal and flag = false(0), set flag true(1).
+            for (int j = 0; j < pCircuit_->circuitGates_[gateID].numFO_; ++j) {
+                int fanoutGateID = pCircuit_->circuitGates_[gateID].fanoutVector_[j];
+                if (processed_[fanoutGateID]) {
+                    continue;
+                }
+                events_[pCircuit_->circuitGates_[fanoutGateID].numLevel_].push(fanoutGateID);
+                processed_[fanoutGateID] = 1;
+            }
+        }
+    }
 }
 
 // **************************************************************************
@@ -72,31 +66,26 @@ void Simulator::eventFaultSim()
 //            ]
 // Date       [ Ver. 1.0 last modified 2023/01/06 ]
 // **************************************************************************
-void Simulator::parallelFaultFaultSimWithAllPattern(PatternProcessor *pPatternCollector, FaultListExtract *pFaultListExtract)
-{
-	// Undetected faults are remaining faults.
-	FaultPtrList remainingFaults;
-	for (Fault *const &pFault : pFaultListExtract->faultsInCircuit_)
-	{
-		bool faultNotDetect = pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0;
-		if (faultNotDetect)
-		{
-			remainingFaults.push_back(pFault);
-		}
-	}
+void Simulator::parallelFaultFaultSimWithAllPattern(PatternProcessor* pPatternCollector, FaultListExtract* pFaultListExtract) {
+    // Undetected faults are remaining faults.
+    FaultPtrList remainingFaults;
+    for (Fault* const& pFault : pFaultListExtract->faultsInCircuit_) {
+        bool faultNotDetect = pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0;
+        if (faultNotDetect) {
+            remainingFaults.push_back(pFault);
+        }
+    }
 
-	// Simulate all patterns for all faults.
-	for (const Pattern &pattern : pPatternCollector->patternVector_)
-	{
-		if (remainingFaults.size() == 0)
-		{
-			break;
-		}
+    // Simulate all patterns for all faults.
+    for (const Pattern& pattern : pPatternCollector->patternVector_) {
+        if (remainingFaults.size() == 0) {
+            break;
+        }
 
-		// Assign pattern to circuit PI & PPI for further fault simulation.
-		assignPatternToCircuitInputs(pattern);
-		parallelFaultFaultSim(remainingFaults);
-	}
+        // Assign pattern to circuit PI & PPI for further fault simulation.
+        assignPatternToCircuitInputs(pattern);
+        parallelFaultFaultSim(remainingFaults);
+    }
 }
 
 // **************************************************************************
@@ -112,11 +101,10 @@ void Simulator::parallelFaultFaultSimWithAllPattern(PatternProcessor *pPatternCo
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/14 last modified 2023/01/06 ]
 // **************************************************************************
-void Simulator::parallelFaultFaultSimWithOnePattern(const Pattern &pattern, FaultPtrList &remainingFaults)
-{
-	// Assign pattern to circuit PI & PPI for further fault simulation.
-	assignPatternToCircuitInputs(pattern);
-	parallelFaultFaultSim(remainingFaults);
+void Simulator::parallelFaultFaultSimWithOnePattern(const Pattern& pattern, FaultPtrList& remainingFaults) {
+    // Assign pattern to circuit PI & PPI for further fault simulation.
+    assignPatternToCircuitInputs(pattern);
+    parallelFaultFaultSim(remainingFaults);
 }
 
 // **************************************************************************
@@ -134,34 +122,29 @@ void Simulator::parallelFaultFaultSimWithOnePattern(const Pattern &pattern, Faul
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/14 last modified 2023/01/06 ]
 // **************************************************************************
-void Simulator::parallelFaultFaultSim(FaultPtrList &remainingFaults)
-{
-	if (remainingFaults.size() == 0)
-	{
-		return;
-	}
+void Simulator::parallelFaultFaultSim(FaultPtrList& remainingFaults) {
+    if (remainingFaults.size() == 0) {
+        return;
+    }
 
-	goodSimCopyGoodToFault(); // Run good simulation first.
+    goodSimCopyGoodToFault();  // Run good simulation first.
 
-	// Inject number of WORD_SIZE activated faults.
-	FaultPtrListIter it = remainingFaults.begin();
-	while (it != remainingFaults.end())
-	{
-		// If fault is activated, inject fault.
-		if (parallelFaultCheckActivation(*it))
-		{
-			parallelFaultFaultInjection(*it, numInjectedFaults_);
-			injectedFaults_[numInjectedFaults_++] = it;
-		}
-		++it;
-		// Run fault simulation if enough fault or end of fault list.
-		if (numInjectedFaults_ == (int)WORD_SIZE || (it == remainingFaults.end() && numInjectedFaults_ > 0))
-		{
-			eventFaultSim();
-			parallelFaultCheckDetectionDropFaults(remainingFaults); // Drop fault here.
-			parallelFaultReset();
-		}
-	}
+    // Inject number of WORD_SIZE activated faults.
+    FaultPtrListIter it = remainingFaults.begin();
+    while (it != remainingFaults.end()) {
+        // If fault is activated, inject fault.
+        if (parallelFaultCheckActivation(*it)) {
+            parallelFaultFaultInjection(*it, numInjectedFaults_);
+            injectedFaults_[numInjectedFaults_++] = it;
+        }
+        ++it;
+        // Run fault simulation if enough fault or end of fault list.
+        if (numInjectedFaults_ == (int)WORD_SIZE || (it == remainingFaults.end() && numInjectedFaults_ > 0)) {
+            eventFaultSim();
+            parallelFaultCheckDetectionDropFaults(remainingFaults);  // Drop fault here.
+            parallelFaultReset();
+        }
+    }
 }
 // **************************************************************************
 // Function   [ Simulator::parallelPatternGoodSimWithAllPattern ]
@@ -175,13 +158,11 @@ void Simulator::parallelFaultFaultSim(FaultPtrList &remainingFaults)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/06 ]
 // **************************************************************************
-void Simulator::parallelPatternGoodSimWithAllPattern(PatternProcessor *pPatternCollector)
-{
-	for (int patternStartIndex = 0; patternStartIndex < (int)pPatternCollector->patternVector_.size(); patternStartIndex += WORD_SIZE)
-	{
-		parallelPatternSetPattern(pPatternCollector, patternStartIndex);
-		goodSim();
-	}
+void Simulator::parallelPatternGoodSimWithAllPattern(PatternProcessor* pPatternCollector) {
+    for (int patternStartIndex = 0; patternStartIndex < (int)pPatternCollector->patternVector_.size(); patternStartIndex += WORD_SIZE) {
+        parallelPatternSetPattern(pPatternCollector, patternStartIndex);
+        goodSim();
+    }
 }
 
 // **************************************************************************
@@ -200,25 +181,21 @@ void Simulator::parallelPatternGoodSimWithAllPattern(PatternProcessor *pPatternC
 //            ]
 // Date       [ Ver. 1.0 last modified 2023/01/06 ]
 // **************************************************************************
-void Simulator::parallelPatternFaultSimWithAllPattern(PatternProcessor *pPatternCollector, FaultListExtract *pFaultListExtract)
-{
-	// Undetected faults are remaining faults.
-	FaultPtrList remainingFaults;
-	for (Fault *const &pFault : pFaultListExtract->faultsInCircuit_)
-	{
-		bool faultNotDetect = pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0;
-		if (faultNotDetect)
-		{
-			remainingFaults.push_back(pFault);
-		}
-	}
+void Simulator::parallelPatternFaultSimWithAllPattern(PatternProcessor* pPatternCollector, FaultListExtract* pFaultListExtract) {
+    // Undetected faults are remaining faults.
+    FaultPtrList remainingFaults;
+    for (Fault* const& pFault : pFaultListExtract->faultsInCircuit_) {
+        bool faultNotDetect = pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0;
+        if (faultNotDetect) {
+            remainingFaults.push_back(pFault);
+        }
+    }
 
-	// Simulate all patterns for all faults.
-	for (int patternStartIndex = 0; patternStartIndex < (int)pPatternCollector->patternVector_.size(); patternStartIndex += WORD_SIZE)
-	{
-		parallelPatternSetPattern(pPatternCollector, patternStartIndex);
-		parallelPatternFaultSim(remainingFaults);
-	}
+    // Simulate all patterns for all faults.
+    for (int patternStartIndex = 0; patternStartIndex < (int)pPatternCollector->patternVector_.size(); patternStartIndex += WORD_SIZE) {
+        parallelPatternSetPattern(pPatternCollector, patternStartIndex);
+        parallelPatternFaultSim(remainingFaults);
+    }
 }
 
 // **************************************************************************
@@ -235,35 +212,28 @@ void Simulator::parallelPatternFaultSimWithAllPattern(PatternProcessor *pPattern
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/06 ]
 // **************************************************************************
-void Simulator::parallelPatternFaultSim(FaultPtrList &remainingFaults)
-{
-	if (remainingFaults.size() == 0)
-	{
-		return;
-	}
+void Simulator::parallelPatternFaultSim(FaultPtrList& remainingFaults) {
+    if (remainingFaults.size() == 0) {
+        return;
+    }
 
-	// Run good simulation first.
-	goodSimCopyGoodToFault();
+    // Run good simulation first.
+    goodSimCopyGoodToFault();
 
-	FaultPtrListIter it = remainingFaults.begin();
-	while (it != remainingFaults.end())
-	{
-		if (parallelPatternCheckActivation((*it)))
-		{
-			parallelPatternFaultInjection((*it));
-			eventFaultSim();
-			parallelPatternCheckDetection((*it));
-			parallelPatternReset();
-		}
-		if ((*it)->faultState_ == Fault::DT)
-		{
-			it = remainingFaults.erase(it);
-		}
-		else
-		{
-			++it;
-		}
-	}
+    FaultPtrListIter it = remainingFaults.begin();
+    while (it != remainingFaults.end()) {
+        if (parallelPatternCheckActivation((*it))) {
+            parallelPatternFaultInjection((*it));
+            eventFaultSim();
+            parallelPatternCheckDetection((*it));
+            parallelPatternReset();
+        }
+        if ((*it)->faultState_ == Fault::DT) {
+            it = remainingFaults.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 // **************************************************************************
@@ -276,19 +246,17 @@ void Simulator::parallelPatternFaultSim(FaultPtrList &remainingFaults)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/18 last modified 2023/01/06 ]
 // **************************************************************************
-void Simulator::parallelFaultReset()
-{
-	for (int i = 0; i < numRecover_; ++i)
-	{
-		pCircuit_->circuitGates_[recoverGates_[i]].faultSimLow_ = pCircuit_->circuitGates_[recoverGates_[i]].goodSimLow_;
-		pCircuit_->circuitGates_[recoverGates_[i]].faultSimHigh_ = pCircuit_->circuitGates_[recoverGates_[i]].goodSimHigh_;
-	}
-	numRecover_ = 0;
-	std::fill(processed_.begin(), processed_.end(), 0);
-	std::fill(faultInjectLow_.begin(), faultInjectLow_.end(), std::array<ParallelValue, 5>({0, 0, 0, 0, 0}));
-	std::fill(faultInjectHigh_.begin(), faultInjectHigh_.end(), std::array<ParallelValue, 5>({0, 0, 0, 0, 0}));
+void Simulator::parallelFaultReset() {
+    for (int i = 0; i < numRecover_; ++i) {
+        pCircuit_->circuitGates_[recoverGates_[i]].faultSimLow_ = pCircuit_->circuitGates_[recoverGates_[i]].goodSimLow_;
+        pCircuit_->circuitGates_[recoverGates_[i]].faultSimHigh_ = pCircuit_->circuitGates_[recoverGates_[i]].goodSimHigh_;
+    }
+    numRecover_ = 0;
+    std::fill(processed_.begin(), processed_.end(), 0);
+    std::fill(faultInjectLow_.begin(), faultInjectLow_.end(), std::array<ParallelValue, 5>({0, 0, 0, 0, 0}));
+    std::fill(faultInjectHigh_.begin(), faultInjectHigh_.end(), std::array<ParallelValue, 5>({0, 0, 0, 0, 0}));
 
-	numInjectedFaults_ = 0;
+    numInjectedFaults_ = 0;
 }
 
 // **************************************************************************
@@ -305,36 +273,32 @@ void Simulator::parallelFaultReset()
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/18 last modified 2023/01/06 ]
 // **************************************************************************
-bool Simulator::parallelFaultCheckActivation(const Fault *const pfault)
-{
-	// If output fault, faultyGate = gateID of the faulty gate.
-	// Else if input fault, faultyGate = gateID of the faulty gate's fanin array.
-	const int &faultyGate = pfault->faultyLine_ == 0 ? pfault->gateID_ : pCircuit_->circuitGates_[pfault->gateID_].faninVector_[pfault->faultyLine_ - 1];
-	const ParallelValue &faultyGateGoodSimLow = pCircuit_->circuitGates_[faultyGate].goodSimLow_;
-	const ParallelValue &faultyGateGoodSimHigh = pCircuit_->circuitGates_[faultyGate].goodSimHigh_;
+bool Simulator::parallelFaultCheckActivation(const Fault* const pfault) {
+    // If output fault, faultyGate = gateID of the faulty gate.
+    // Else if input fault, faultyGate = gateID of the faulty gate's fanin array.
+    const int& faultyGate = pfault->faultyLine_ == 0 ? pfault->gateID_ : pCircuit_->circuitGates_[pfault->gateID_].faninVector_[pfault->faultyLine_ - 1];
+    const ParallelValue& faultyGateGoodSimLow = pCircuit_->circuitGates_[faultyGate].goodSimLow_;
+    const ParallelValue& faultyGateGoodSimHigh = pCircuit_->circuitGates_[faultyGate].goodSimHigh_;
 
-	switch (pfault->faultType_)
-	{
-		case Fault::SA0:
-			return faultyGateGoodSimHigh != PARA_L;
-		case Fault::SA1:
-			return faultyGateGoodSimLow != PARA_L;
-		case Fault::STR:
-			if (pCircuit_->numFrame_ < 2)
-			{
-				return false;
-			}
-			return (faultyGateGoodSimLow & pCircuit_->circuitGates_[faultyGate + pCircuit_->numGate_].goodSimHigh_) != PARA_L;
-		case Fault::STF:
-			if (pCircuit_->numFrame_ < 2)
-			{
-				return false;
-			}
-			return (faultyGateGoodSimHigh & pCircuit_->circuitGates_[faultyGate + pCircuit_->numGate_].goodSimLow_) != PARA_L;
-		default:
-			break;
-	}
-	return false;
+    switch (pfault->faultType_) {
+        case Fault::SA0:
+            return faultyGateGoodSimHigh != PARA_L;
+        case Fault::SA1:
+            return faultyGateGoodSimLow != PARA_L;
+        case Fault::STR:
+            if (pCircuit_->numFrame_ < 2) {
+                return false;
+            }
+            return (faultyGateGoodSimLow & pCircuit_->circuitGates_[faultyGate + pCircuit_->numGate_].goodSimHigh_) != PARA_L;
+        case Fault::STF:
+            if (pCircuit_->numFrame_ < 2) {
+                return false;
+            }
+            return (faultyGateGoodSimHigh & pCircuit_->circuitGates_[faultyGate + pCircuit_->numGate_].goodSimLow_) != PARA_L;
+        default:
+            break;
+    }
+    return false;
 }
 
 // **************************************************************************
@@ -351,35 +315,32 @@ bool Simulator::parallelFaultCheckActivation(const Fault *const pfault)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/18 last modified 2023/01/06 ]
 // **************************************************************************
-void Simulator::parallelFaultFaultInjection(const Fault *const pfault, const size_t &injectFaultIndex)
-{
-	int faultyGate = pfault->gateID_;
-	switch (pfault->faultType_)
-	{
-		case Fault::SA0:
-			setBitValue(faultInjectLow_[faultyGate][pfault->faultyLine_], injectFaultIndex, H);
-			break;
-		case Fault::SA1:
-			setBitValue(faultInjectHigh_[faultyGate][pfault->faultyLine_], injectFaultIndex, H);
-			break;
-		case Fault::STR:
-			faultyGate += pCircuit_->numGate_;
-			setBitValue(faultInjectLow_[faultyGate][pfault->faultyLine_], injectFaultIndex, H);
-			break;
-		case Fault::STF:
-			faultyGate += pCircuit_->numGate_;
-			setBitValue(faultInjectHigh_[faultyGate][pfault->faultyLine_], injectFaultIndex, H);
-			break;
-		default:
-			break;
-	}
+void Simulator::parallelFaultFaultInjection(const Fault* const pfault, const size_t& injectFaultIndex) {
+    int faultyGate = pfault->gateID_;
+    switch (pfault->faultType_) {
+        case Fault::SA0:
+            setBitValue(faultInjectLow_[faultyGate][pfault->faultyLine_], injectFaultIndex, H);
+            break;
+        case Fault::SA1:
+            setBitValue(faultInjectHigh_[faultyGate][pfault->faultyLine_], injectFaultIndex, H);
+            break;
+        case Fault::STR:
+            faultyGate += pCircuit_->numGate_;
+            setBitValue(faultInjectLow_[faultyGate][pfault->faultyLine_], injectFaultIndex, H);
+            break;
+        case Fault::STF:
+            faultyGate += pCircuit_->numGate_;
+            setBitValue(faultInjectHigh_[faultyGate][pfault->faultyLine_], injectFaultIndex, H);
+            break;
+        default:
+            break;
+    }
 
-	// Put gate into event list.
-	if (!processed_[faultyGate])
-	{
-		events_[pCircuit_->circuitGates_[faultyGate].numLevel_].push(faultyGate);
-		processed_[faultyGate] = 1;
-	}
+    // Put gate into event list.
+    if (!processed_[faultyGate]) {
+        events_[pCircuit_->circuitGates_[faultyGate].numLevel_].push(faultyGate);
+        processed_[faultyGate] = 1;
+    }
 }
 
 // **************************************************************************
@@ -395,29 +356,24 @@ void Simulator::parallelFaultFaultInjection(const Fault *const pfault, const siz
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/18 last modified 2023/01/06 ]
 // **************************************************************************
-void Simulator::parallelFaultCheckDetectionDropFaults(FaultPtrList &remainingFaults)
-{
-	ParallelValue detected = PARA_L;
-	int start = pCircuit_->totalGate_ - pCircuit_->numPO_ - pCircuit_->numPPI_;
-	for (int i = start; i < pCircuit_->totalGate_; ++i)
-	{
-		detected |= ((pCircuit_->circuitGates_[i].goodSimLow_ & pCircuit_->circuitGates_[i].faultSimHigh_) | (pCircuit_->circuitGates_[i].goodSimHigh_ & pCircuit_->circuitGates_[i].faultSimLow_));
-	}
+void Simulator::parallelFaultCheckDetectionDropFaults(FaultPtrList& remainingFaults) {
+    ParallelValue detected = PARA_L;
+    int start = pCircuit_->totalGate_ - pCircuit_->numPO_ - pCircuit_->numPPI_;
+    for (int i = start; i < pCircuit_->totalGate_; ++i) {
+        detected |= ((pCircuit_->circuitGates_[i].goodSimLow_ & pCircuit_->circuitGates_[i].faultSimHigh_) | (pCircuit_->circuitGates_[i].goodSimHigh_ & pCircuit_->circuitGates_[i].faultSimLow_));
+    }
 
-	// Fault drop.
-	for (int i = 0; i < numInjectedFaults_; ++i)
-	{
-		if (getBitValue(detected, (size_t)i) == L)
-		{
-			continue;
-		}
-		++((*injectedFaults_[i])->detection_);
-		if ((*injectedFaults_[i])->detection_ >= numDetection_)
-		{
-			(*injectedFaults_[i])->faultState_ = Fault::DT;
-			remainingFaults.erase(injectedFaults_[i]);
-		}
-	}
+    // Fault drop.
+    for (int i = 0; i < numInjectedFaults_; ++i) {
+        if (getBitValue(detected, (size_t)i) == L) {
+            continue;
+        }
+        ++((*injectedFaults_[i])->detection_);
+        if ((*injectedFaults_[i])->detection_ >= numDetection_) {
+            (*injectedFaults_[i])->faultState_ = Fault::DT;
+            remainingFaults.erase(injectedFaults_[i]);
+        }
+    }
 }
 
 // **************************************************************************
@@ -430,18 +386,16 @@ void Simulator::parallelFaultCheckDetectionDropFaults(FaultPtrList &remainingFau
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/06 ]
 // **************************************************************************
-void Simulator::parallelPatternReset()
-{
-	for (int i = 0; i < numRecover_; ++i)
-	{
-		pCircuit_->circuitGates_[recoverGates_[i]].faultSimLow_ = pCircuit_->circuitGates_[recoverGates_[i]].goodSimLow_;
-		pCircuit_->circuitGates_[recoverGates_[i]].faultSimHigh_ = pCircuit_->circuitGates_[recoverGates_[i]].goodSimHigh_;
-	}
-	numRecover_ = 0;
-	std::fill(processed_.begin(), processed_.end(), 0);
-	std::fill(faultInjectLow_.begin(), faultInjectLow_.end(), std::array<ParallelValue, 5>({0, 0, 0, 0, 0}));
-	std::fill(faultInjectHigh_.begin(), faultInjectHigh_.end(), std::array<ParallelValue, 5>({0, 0, 0, 0, 0}));
-	activated_ = PARA_L;
+void Simulator::parallelPatternReset() {
+    for (int i = 0; i < numRecover_; ++i) {
+        pCircuit_->circuitGates_[recoverGates_[i]].faultSimLow_ = pCircuit_->circuitGates_[recoverGates_[i]].goodSimLow_;
+        pCircuit_->circuitGates_[recoverGates_[i]].faultSimHigh_ = pCircuit_->circuitGates_[recoverGates_[i]].goodSimHigh_;
+    }
+    numRecover_ = 0;
+    std::fill(processed_.begin(), processed_.end(), 0);
+    std::fill(faultInjectLow_.begin(), faultInjectLow_.end(), std::array<ParallelValue, 5>({0, 0, 0, 0, 0}));
+    std::fill(faultInjectHigh_.begin(), faultInjectHigh_.end(), std::array<ParallelValue, 5>({0, 0, 0, 0, 0}));
+    activated_ = PARA_L;
 }
 
 // **************************************************************************
@@ -459,40 +413,36 @@ void Simulator::parallelPatternReset()
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/18 last modified 2023/01/06 ]
 // **************************************************************************
-bool Simulator::parallelPatternCheckActivation(const Fault *const pfault)
-{
-	// If output fault, faultyGate = gateID of the faulty gate.
-	// Else if input fault, faultyGate = gateID of the faulty gate's fanin array.
-	const int &faultyGate = pfault->faultyLine_ == 0 ? pfault->gateID_ : pCircuit_->circuitGates_[pfault->gateID_].faninVector_[pfault->faultyLine_ - 1];
-	const ParallelValue &faultyGateGoodSimLow = pCircuit_->circuitGates_[faultyGate].goodSimLow_;
-	const ParallelValue &faultyGateGoodSimHigh = pCircuit_->circuitGates_[faultyGate].goodSimHigh_;
+bool Simulator::parallelPatternCheckActivation(const Fault* const pfault) {
+    // If output fault, faultyGate = gateID of the faulty gate.
+    // Else if input fault, faultyGate = gateID of the faulty gate's fanin array.
+    const int& faultyGate = pfault->faultyLine_ == 0 ? pfault->gateID_ : pCircuit_->circuitGates_[pfault->gateID_].faninVector_[pfault->faultyLine_ - 1];
+    const ParallelValue& faultyGateGoodSimLow = pCircuit_->circuitGates_[faultyGate].goodSimLow_;
+    const ParallelValue& faultyGateGoodSimHigh = pCircuit_->circuitGates_[faultyGate].goodSimHigh_;
 
-	switch (pfault->faultType_)
-	{
-		case Fault::SA0:
-			activated_ = faultyGateGoodSimHigh;
-			return activated_ != PARA_L;
-		case Fault::SA1:
-			activated_ = faultyGateGoodSimLow;
-			return activated_ != PARA_L;
-		case Fault::STR:
-			if (pCircuit_->numFrame_ < 2)
-			{
-				return false;
-			}
-			activated_ = (faultyGateGoodSimLow & pCircuit_->circuitGates_[faultyGate + pCircuit_->numGate_].goodSimHigh_);
-			return activated_ != PARA_L;
-		case Fault::STF:
-			if (pCircuit_->numFrame_ < 2)
-			{
-				return false;
-			}
-			activated_ = (faultyGateGoodSimHigh & pCircuit_->circuitGates_[faultyGate + pCircuit_->numGate_].goodSimLow_);
-			return activated_ != PARA_L;
-		default:
-			break;
-	}
-	return false;
+    switch (pfault->faultType_) {
+        case Fault::SA0:
+            activated_ = faultyGateGoodSimHigh;
+            return activated_ != PARA_L;
+        case Fault::SA1:
+            activated_ = faultyGateGoodSimLow;
+            return activated_ != PARA_L;
+        case Fault::STR:
+            if (pCircuit_->numFrame_ < 2) {
+                return false;
+            }
+            activated_ = (faultyGateGoodSimLow & pCircuit_->circuitGates_[faultyGate + pCircuit_->numGate_].goodSimHigh_);
+            return activated_ != PARA_L;
+        case Fault::STF:
+            if (pCircuit_->numFrame_ < 2) {
+                return false;
+            }
+            activated_ = (faultyGateGoodSimHigh & pCircuit_->circuitGates_[faultyGate + pCircuit_->numGate_].goodSimLow_);
+            return activated_ != PARA_L;
+        default:
+            break;
+    }
+    return false;
 }
 
 // **************************************************************************
@@ -507,35 +457,32 @@ bool Simulator::parallelPatternCheckActivation(const Fault *const pfault)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/06 ]
 // **************************************************************************
-void Simulator::parallelPatternFaultInjection(const Fault *const pfault)
-{
-	int faultyGate = pfault->gateID_;
-	switch (pfault->faultType_)
-	{
-		case Fault::SA0:
-			faultInjectLow_[faultyGate][pfault->faultyLine_] = PARA_H;
-			break;
-		case Fault::SA1:
-			faultInjectHigh_[faultyGate][pfault->faultyLine_] = PARA_H;
-			break;
-		case Fault::STR:
-			faultyGate += pCircuit_->numGate_;
-			faultInjectLow_[faultyGate][pfault->faultyLine_] = PARA_H;
-			break;
-		case Fault::STF:
-			faultyGate += pCircuit_->numGate_;
-			faultInjectHigh_[faultyGate][pfault->faultyLine_] = PARA_H;
-			break;
-		default:
-			break;
-	}
+void Simulator::parallelPatternFaultInjection(const Fault* const pfault) {
+    int faultyGate = pfault->gateID_;
+    switch (pfault->faultType_) {
+        case Fault::SA0:
+            faultInjectLow_[faultyGate][pfault->faultyLine_] = PARA_H;
+            break;
+        case Fault::SA1:
+            faultInjectHigh_[faultyGate][pfault->faultyLine_] = PARA_H;
+            break;
+        case Fault::STR:
+            faultyGate += pCircuit_->numGate_;
+            faultInjectLow_[faultyGate][pfault->faultyLine_] = PARA_H;
+            break;
+        case Fault::STF:
+            faultyGate += pCircuit_->numGate_;
+            faultInjectHigh_[faultyGate][pfault->faultyLine_] = PARA_H;
+            break;
+        default:
+            break;
+    }
 
-	// Put gate into event list.
-	if (!processed_[faultyGate])
-	{
-		events_[pCircuit_->circuitGates_[faultyGate].numLevel_].push(faultyGate);
-		processed_[faultyGate] = 1;
-	}
+    // Put gate into event list.
+    if (!processed_[faultyGate]) {
+        events_[pCircuit_->circuitGates_[faultyGate].numLevel_].push(faultyGate);
+        processed_[faultyGate] = 1;
+    }
 }
 
 // **************************************************************************
@@ -551,32 +498,27 @@ void Simulator::parallelPatternFaultInjection(const Fault *const pfault)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/06 ]
 // **************************************************************************
-void Simulator::parallelPatternCheckDetection(Fault *const pfault)
-{
-	ParallelValue detected = PARA_L;
-	int start = pCircuit_->totalGate_ - pCircuit_->numPO_ - pCircuit_->numPPI_;
-	for (int i = start; i < pCircuit_->totalGate_; ++i)
-	{
-		// TO-DO homework 02
-		detected |= ((pCircuit_->circuitGates_[i].goodSimLow_ & pCircuit_->circuitGates_[i].faultSimHigh_) | (pCircuit_->circuitGates_[i].goodSimHigh_ & pCircuit_->circuitGates_[i].faultSimLow_));
-		// End of TO-DO
-	}
-	detected &= activated_; // Check if detected and activated.
+void Simulator::parallelPatternCheckDetection(Fault* const pfault) {
+    ParallelValue detected = PARA_L;
+    int start = pCircuit_->totalGate_ - pCircuit_->numPO_ - pCircuit_->numPPI_;
+    for (int i = start; i < pCircuit_->totalGate_; ++i) {
+        // TO-DO homework 02
+        detected |= ((pCircuit_->circuitGates_[i].goodSimLow_ & pCircuit_->circuitGates_[i].faultSimHigh_) | (pCircuit_->circuitGates_[i].goodSimHigh_ & pCircuit_->circuitGates_[i].faultSimLow_));
+        // End of TO-DO
+    }
+    detected &= activated_;  // Check if detected and activated.
 
-	// Set fault state to DT for fault drop.
-	for (int i = 0; i < WORD_SIZE; ++i)
-	{
-		if (getBitValue(detected, i) == L)
-		{
-			continue;
-		}
-		++(pfault->detection_);
-		if (pfault->detection_ >= numDetection_)
-		{
-			pfault->faultState_ = Fault::DT;
-			break;
-		}
-	}
+    // Set fault state to DT for fault drop.
+    for (int i = 0; i < WORD_SIZE; ++i) {
+        if (getBitValue(detected, i) == L) {
+            continue;
+        }
+        ++(pfault->detection_);
+        if (pfault->detection_ >= numDetection_) {
+            pfault->faultState_ = Fault::DT;
+            break;
+        }
+    }
 }
 
 // **************************************************************************
@@ -593,84 +535,60 @@ void Simulator::parallelPatternCheckDetection(Fault *const pfault)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/06 ]
 // **************************************************************************
-void Simulator::parallelPatternSetPattern(PatternProcessor *pPatternProcessor, const int &patternStartIndex)
-{ // TODO LOS not yet supported
-	// Reset PI and PPI values to unknowns.
-	for (int j = 0; j < pCircuit_->numPI_ + pCircuit_->numPPI_; ++j)
-	{
-		for (int k = 0; k < pCircuit_->numFrame_; ++k)
-		{
-			pCircuit_->circuitGates_[j + k * pCircuit_->numGate_].goodSimLow_ = PARA_L;
-			pCircuit_->circuitGates_[j + k * pCircuit_->numGate_].goodSimHigh_ = PARA_L;
-		}
-	}
-	// Assign up to WORD_SIZE number of pattern values.
-	int endpat = (int)pPatternProcessor->patternVector_.size();
-	if (patternStartIndex + (int)WORD_SIZE <= (int)pPatternProcessor->patternVector_.size())
-	{
-		endpat = patternStartIndex + WORD_SIZE;
-	}
-	for (int j = patternStartIndex; j < endpat; ++j)
-	{
-		// Assign PIs.
-		if (!pPatternProcessor->patternVector_[j].PI1_.empty())
-		{
-			for (int k = 0; k < pPatternProcessor->numPI_; ++k)
-			{
-				if (pPatternProcessor->patternVector_[j].PI1_[k] == L)
-				{
-					setBitValue(pCircuit_->circuitGates_[k].goodSimLow_, j - patternStartIndex, H);
-				}
-				else if (pPatternProcessor->patternVector_[j].PI1_[k] == H)
-				{
-					setBitValue(pCircuit_->circuitGates_[k].goodSimHigh_, j - patternStartIndex, H);
-				}
-			}
-		}
+void Simulator::parallelPatternSetPattern(PatternProcessor* pPatternProcessor, const int& patternStartIndex) {  // TODO LOS not yet supported
+    // Reset PI and PPI values to unknowns.
+    for (int j = 0; j < pCircuit_->numPI_ + pCircuit_->numPPI_; ++j) {
+        for (int k = 0; k < pCircuit_->numFrame_; ++k) {
+            pCircuit_->circuitGates_[j + k * pCircuit_->numGate_].goodSimLow_ = PARA_L;
+            pCircuit_->circuitGates_[j + k * pCircuit_->numGate_].goodSimHigh_ = PARA_L;
+        }
+    }
+    // Assign up to WORD_SIZE number of pattern values.
+    int endpat = (int)pPatternProcessor->patternVector_.size();
+    if (patternStartIndex + (int)WORD_SIZE <= (int)pPatternProcessor->patternVector_.size()) {
+        endpat = patternStartIndex + WORD_SIZE;
+    }
+    for (int j = patternStartIndex; j < endpat; ++j) {
+        // Assign PIs.
+        if (!pPatternProcessor->patternVector_[j].PI1_.empty()) {
+            for (int k = 0; k < pPatternProcessor->numPI_; ++k) {
+                if (pPatternProcessor->patternVector_[j].PI1_[k] == L) {
+                    setBitValue(pCircuit_->circuitGates_[k].goodSimLow_, j - patternStartIndex, H);
+                } else if (pPatternProcessor->patternVector_[j].PI1_[k] == H) {
+                    setBitValue(pCircuit_->circuitGates_[k].goodSimHigh_, j - patternStartIndex, H);
+                }
+            }
+        }
 
-		if (!pPatternProcessor->patternVector_[j].PI2_.empty() && pCircuit_->numFrame_ > 1)
-		{
-			for (int k = 0; k < pPatternProcessor->numPI_; ++k)
-			{
-				int index = k + pCircuit_->numGate_;
-				if (pPatternProcessor->patternVector_[j].PI2_[k] == L)
-				{
-					setBitValue(pCircuit_->circuitGates_[index].goodSimLow_, j - patternStartIndex, H);
-				}
-				else if (pPatternProcessor->patternVector_[j].PI2_[k] == H)
-				{
-					setBitValue(pCircuit_->circuitGates_[index].goodSimHigh_, j - patternStartIndex, H);
-				}
-			}
-		}
-		// Assign PPIS
-		if (!pPatternProcessor->patternVector_[j].PPI_.empty())
-		{
-			for (int k = 0; k < pPatternProcessor->numPPI_; ++k)
-			{
-				int index = k + pCircuit_->numPI_;
-				if (pPatternProcessor->patternVector_[j].PPI_[k] == L)
-				{
-					setBitValue(pCircuit_->circuitGates_[index].goodSimLow_, j - patternStartIndex, H);
-				}
-				else if (pPatternProcessor->patternVector_[j].PPI_[k] == H)
-				{
-					setBitValue(pCircuit_->circuitGates_[index].goodSimHigh_, j - patternStartIndex, H);
-				}
-			}
-		}
+        if (!pPatternProcessor->patternVector_[j].PI2_.empty() && pCircuit_->numFrame_ > 1) {
+            for (int k = 0; k < pPatternProcessor->numPI_; ++k) {
+                int index = k + pCircuit_->numGate_;
+                if (pPatternProcessor->patternVector_[j].PI2_[k] == L) {
+                    setBitValue(pCircuit_->circuitGates_[index].goodSimLow_, j - patternStartIndex, H);
+                } else if (pPatternProcessor->patternVector_[j].PI2_[k] == H) {
+                    setBitValue(pCircuit_->circuitGates_[index].goodSimHigh_, j - patternStartIndex, H);
+                }
+            }
+        }
+        // Assign PPIS
+        if (!pPatternProcessor->patternVector_[j].PPI_.empty()) {
+            for (int k = 0; k < pPatternProcessor->numPPI_; ++k) {
+                int index = k + pCircuit_->numPI_;
+                if (pPatternProcessor->patternVector_[j].PPI_[k] == L) {
+                    setBitValue(pCircuit_->circuitGates_[index].goodSimLow_, j - patternStartIndex, H);
+                } else if (pPatternProcessor->patternVector_[j].PPI_[k] == H) {
+                    setBitValue(pCircuit_->circuitGates_[index].goodSimHigh_, j - patternStartIndex, H);
+                }
+            }
+        }
 
-		if (!pPatternProcessor->patternVector_[j].SI_.empty() && pCircuit_->numFrame_ > 1 && pCircuit_->timeFrameConnectType_ == Circuit::SHIFT)
-		{
-			int index = pCircuit_->numGate_ + pCircuit_->numPI_;
-			if (pPatternProcessor->patternVector_[j].SI_[0] == L)
-			{
-				setBitValue(pCircuit_->circuitGates_[index].goodSimLow_, j - patternStartIndex, H);
-			}
-			else if (pPatternProcessor->patternVector_[j].SI_[0] == H)
-			{
-				setBitValue(pCircuit_->circuitGates_[index].goodSimHigh_, j - patternStartIndex, H);
-			}
-		}
-	}
+        if (!pPatternProcessor->patternVector_[j].SI_.empty() && pCircuit_->numFrame_ > 1 && pCircuit_->timeFrameConnectType_ == Circuit::SHIFT) {
+            int index = pCircuit_->numGate_ + pCircuit_->numPI_;
+            if (pPatternProcessor->patternVector_[j].SI_[0] == L) {
+                setBitValue(pCircuit_->circuitGates_[index].goodSimLow_, j - patternStartIndex, H);
+            } else if (pPatternProcessor->patternVector_[j].SI_[0] == H) {
+                setBitValue(pCircuit_->circuitGates_[index].goodSimHigh_, j - patternStartIndex, H);
+            }
+        }
+    }
 }

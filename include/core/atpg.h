@@ -66,9 +66,11 @@ class Atpg {
     void parallelsetupCircuitParameter() {
         setupCircuitParameter();
     }
-    void parallelStuckAtFaultATPG(FaultPtrList& faultListToGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults) {
-        StuckAtFaultATPG(faultListToGen, pPatternProcessor, numOfAtpgUntestableFaults);
-    }
+    // void parallelStuckAtFaultATPG(FaultPtrList& faultListToGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults) {
+    //     StuckAtFaultATPG(faultListToGen, pPatternProcessor, numOfAtpgUntestableFaults);
+    // }
+    void StuckAtFaultATPG(FaultPtrList& faultListToGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults);
+    void parallelStuckAtFaultATPG(FaultPtrList& faultPtrListForGen, int& numOfAtpgUntestableFaults, Pattern& patternRes);
 
    private:
     Circuit* pCircuit_;                                        // the circuit built on read verilog
@@ -107,7 +109,7 @@ class Atpg {
     void identifyGateUniquePath();
 
     void TransitionDelayFaultATPG(FaultPtrList& faultPtrListForGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults);
-    void StuckAtFaultATPG(FaultPtrList& faultListToGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults);
+    // void StuckAtFaultATPG(FaultPtrList& faultListToGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults);
 
     Gate* getGateForFaultActivation(const Fault& fault);
     void setGateAtpgValAndRunImplication(Gate& gate, const Value& val);

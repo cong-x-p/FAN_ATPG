@@ -13,13 +13,13 @@
 #  Platform: x86_64
 #  Memory:   1.54757e+06 MB
 #
-/atpg_s27.script 1> read_lib techlib/mod_nangate45.mdt
+/atpg_s27_debug.script 1> read_lib /home/congxiping/FAN_ATPG/techlib/mod_nangate45.mdt
 #  Reading technology library ...
-#  Finished reading library `techlib/mod_nangate45.mdt'    0.009016 s    2.09716e+07 MB
-/atpg_s27.script 2> read_netlist mod_netlist/s27.v
+#  Finished reading library `/home/congxiping/FAN_ATPG/techlib/mod_nangate45.mdt'    0.008996 s    2.09716e+07 MB
+/atpg_s27_debug.script 2> read_netlist /home/congxiping/FAN_ATPG/mod_netlist/s27.v
 #  Reading netlist ...
-#  Finished reading netlist `mod_netlist/s27.v'    0.001081 s    2.09716e+07 MB
-/atpg_s27.script 3> report_netlist
+#  Finished reading netlist `/home/congxiping/FAN_ATPG/mod_netlist/s27.v'    0.001028 s    2.09716e+07 MB
+/atpg_s27_debug.script 3> report_netlist
 #  netlist information
 #    number of modules: 1
 #    modules:           s27
@@ -27,7 +27,7 @@
 #    number of ports:   9
 #    number of cells:   13
 #    number of nets:    21
-/atpg_s27.script 4> build_circuit --frame 1
+/atpg_s27_debug.script 4> build_circuit --frame 1
 #  Building circuit ...
 PI: G0
 PI: G1
@@ -79,8 +79,8 @@ U_G5 type: 4 FO: 0
 U_G6 type: 4 FO: 0
 0
 U_G7 type: 4 FO: 0
-#  Finished building circuit    0.003657 s    2.09716e+07 MB
-/atpg_s27.script 5> report_circuit
+#  Finished building circuit    0.003713 s    2.09716e+07 MB
+/atpg_s27_debug.script 5> report_circuit
 #  circuit information
 #    netlist:         s27
 #    number of PIs:   4
@@ -89,18 +89,18 @@ U_G7 type: 4 FO: 0
 #    number of combs: 10
 #    number of gates: 21
 #    number of nets:  32
-/atpg_s27.script 6> set_fault_type saf
+/atpg_s27_debug.script 6> set_fault_type saf
 #  fault type set to stuck-at fault
-/atpg_s27.script 7> add_fault --all
+/atpg_s27_debug.script 7> add_fault --all
 #  Building fault list ...
-#  Finished building fault list    3.6e-05 s    2.09716e+07 MB
-/atpg_s27.script 8> set_static_compression off
+#  Finished building fault list    3.4e-05 s    2.09716e+07 MB
+/atpg_s27_debug.script 8> set_static_compression off
 #  static compression set to off
-/atpg_s27.script 9> set_dynamic_compression off
+/atpg_s27_debug.script 9> set_dynamic_compression off
 #  dynamic compression set to off
-/atpg_s27.script 10> set_X-Fill on
+/atpg_s27_debug.script 10> set_X-Fill on
 #  X-Fill set to on
-/atpg_s27.script 11> run_atpg
+/atpg_s27_debug.script 11> run_atpg
 #  Performing pattern generation ...
 PI: G0
 PI: G1
@@ -152,59 +152,7 @@ U_G5 type: 4 FO: 0
 U_G6 type: 4 FO: 0
 0
 U_G7 type: 4 FO: 0
-1
 result: 0
-PI: G0
-PI: G1
-PI: G2
-PI: G3
-PPI: U_G5
-PPI: U_G6
-PPI: U_G7
-PO: G17
-0
-U_G6 type: 1 FO: 1
-0
-U_G7 type: 1 FO: 1
-0
-U_G14 type: 1 FO: 1
-0
-U_G12 type: 1 FO: 1
-1
-U_G5 type: 3 FO: 1
-1
-U_G6 type: 3 FO: 1
-1
-U_G7 type: 3 FO: 1
-1
-U_G14 type: 7 FO: 2
-1
-U_G12 type: 18 FO: 2
-1
-U_G8 type: 9 FO: 2
-1
-U_G13 type: 18 FO: 1
-1
-U_G15 type: 15 FO: 1
-1
-U_G16 type: 15 FO: 1
-1
-U_G9 type: 12 FO: 1
-1
-U_G11 type: 18 FO: 3
-1
-U_G17 type: 7 FO: 1
-1
-U_G10 type: 18 FO: 1
-0
-U_G15 type: 2 FO: 0
-0
-U_G5 type: 4 FO: 0
-0
-U_G6 type: 4 FO: 0
-0
-U_G7 type: 4 FO: 0
-2
 PI: G0
 PI: G1
 PI: G2

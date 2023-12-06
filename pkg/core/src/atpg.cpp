@@ -10,6 +10,98 @@
 
 using namespace CoreNs;
 
+void Atpg::parallelStuckAtFaultATPG(FaultPtrList& faultPtrListForGen, int& numOfAtpgUntestableFaults, Pattern& patternRes) {
+    // std::cout << faultPtrListForGen.size() << " " << faultPtrListForGen.front()->gateID_ << std::endl;
+    SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(*faultPtrListForGen.front(), false);
+    std::cout << "result: " << result << std::endl;
+    if (result == PATTERN_FOUND) {
+        // Pattern pattern(pCircuit_);
+        // pPatternProcessor->patternVector_.push_back(pattern);
+
+        resetPrevAtpgValStored();
+        clearAllFaultEffectByEvaluation();
+        storeCurrentAtpgVal();
+        writeAtpgValToPatternPI(patternRes);
+
+        // if (pPatternProcessor->dynamicCompression_ == PatternProcessor::ON) {
+        //     FaultPtrList faultListTemp = faultPtrListForGen;
+        //     pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultPtrListForGen);
+        //     pSimulator_->goodSim();
+        //     writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
+
+        //     for (Fault* pFault : faultListTemp) {
+        //         // skip detected faults
+        //         if (pFault->faultState_ == Fault::DT) {
+        //             continue;
+        //         }
+
+        //         Gate* pGateForActivation = getGateForFaultActivation(*pFault);
+        //         if (((pGateForActivation->atpgVal_ == L) && (pFault->faultType_ == Fault::SA0)) ||
+        //             ((pGateForActivation->atpgVal_ == H) && (pFault->faultType_ == Fault::SA1))) {
+        //             continue;
+        //         }
+
+        //         // Activation check
+        //         if (pGateForActivation->atpgVal_ != X) {
+        //             if ((pFault->faultType_ == Fault::SA0) || (pFault->faultType_ == Fault::SA1)) {
+        //                 setGateAtpgValAndRunImplication((*pGateForActivation), X);
+        //             } else {
+        //                 continue;
+        //             }
+        //         }
+
+        //         if (xPathExists(pGateForActivation)) {
+        //             // TO-DO homework 05 implement DTC here end of TO-DO
+        //             if (generateSinglePatternOnTargetFault(*pFault, true) == PATTERN_FOUND) {
+        //                 resetPrevAtpgValStored();
+        //                 clearAllFaultEffectByEvaluation();
+        //                 storeCurrentAtpgVal();
+        //                 writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
+        //             } else {
+        //                 for (Gate& gate : pCircuit_->circuitGates_) {
+        //                     gate.atpgVal_ = gate.prevAtpgValStored_;
+        //                 }
+        //             }
+        //         } else {
+        //             setGateAtpgValAndRunImplication((*pGateForActivation), pGateForActivation->prevAtpgValStored_);
+        //         }
+        //     }
+        // }
+
+        clearAllFaultEffectByEvaluation();
+        storeCurrentAtpgVal();
+        writeAtpgValToPatternPI(patternRes);
+
+        // if (pPatternProcessor->XFill_ == PatternProcessor::ON) {
+        //     // Randomly fill the pats_.back().
+        //     // Note that the v_, gh_, gl_, fh_ and fl_ do not be changed.
+        //     randomFill(patternRes);
+        // }
+
+        //  This function will assign pi/ppi stored in pats_.back() to
+        //  the gh_ and gl_ in each gate, and then it will run fault
+        //  simulation to drop fault.
+
+        pSimulator_->parallelFaultFaultSimWithOnePattern(patternRes, faultPtrListForGen);
+        // cxp
+        // pSimulator_->assignPatternToCircuitInputs(pPatternProcessor->patternVector_.back());
+
+        // After pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(),faultListToGen) , the pi/ppi
+        // values have been passed to gh_ and gl_ of each gate.  Therefore, we can
+        // directly use "writeGoodSimValToPatternPO" to perform goodSim to get the PoValue.
+        pSimulator_->goodSim();
+        writeGoodSimValToPatternPO(patternRes);
+    } else if (result == FAULT_UNTESTABLE) {
+        faultPtrListForGen.front()->faultState_ = Fault::AU;
+        numOfAtpgUntestableFaults += faultPtrListForGen.front()->equivalent_;
+        faultPtrListForGen.pop_front();
+    } else {
+        faultPtrListForGen.front()->faultState_ = Fault::AB;
+        faultPtrListForGen.push_back(faultPtrListForGen.front());
+        faultPtrListForGen.pop_front();
+    }
+}
+
 // **************************************************************************
 // Function   [ Atpg::generatePatternSet ]
 // Commenter  [ CAL WWS ]
@@ -39,63 +131,63 @@ using namespace CoreNs;
 // 						]
 // Date       [ Ver. 1.0 started 2013/08/13	last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::generatePatternSet(PatternProcessor* pPatternProcessor, FaultListExtract* pFaultListExtractor, bool isMFO) {
-    Fault* pCurrentFault = NULL;
-    FaultPtrList originalFaultPtrList, faultPtrListForSTC;
-    setupCircuitParameter();
-    pPatternProcessor->init(pCircuit_);
+// void Atpg::generatePatternSet(PatternProcessor* pPatternProcessor, FaultListExtract* pFaultListExtractor, bool isMFO) {
+//     Fault* pCurrentFault = NULL;
+//     FaultPtrList originalFaultPtrList, faultPtrListForSTC;
+//     setupCircuitParameter();
+//     pPatternProcessor->init(pCircuit_);
 
-    // setting faults for running ATPG
-    for (Fault* pFault : pFaultListExtractor->faultsInCircuit_) {
-        const bool faultIsQualified = (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0);
-        if (faultIsQualified) {
-            originalFaultPtrList.push_back(pFault);
-            faultPtrListForSTC.push_back(pFault);
-        }
-    }
+//     // setting faults for running ATPG
+//     for (Fault* pFault : pFaultListExtractor->faultsInCircuit_) {
+//         const bool faultIsQualified = (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0);
+//         if (faultIsQualified) {
+//             originalFaultPtrList.push_back(pFault);
+//             faultPtrListForSTC.push_back(pFault);
+//         }
+//     }
 
-    // testClearFaultEffect(originalFaultPtrList); // only used for debug
+//     // testClearFaultEffect(originalFaultPtrList); // only used for debug
 
-    const double faultPtrListSize = (double)(originalFaultPtrList.size());
-    int numOfAtpgUntestableFaults = 0;
-    // record pattern set when lower undetected fault/ lower test length with same undetected fault
-    numOfAtpgUntestableFaults = 0;
+//     const double faultPtrListSize = (double)(originalFaultPtrList.size());
+//     int numOfAtpgUntestableFaults = 0;
+//     // record pattern set when lower undetected fault/ lower test length with same undetected fault
+//     numOfAtpgUntestableFaults = 0;
 
-    pPatternProcessor->patternVector_.clear();
-    pPatternProcessor->patternVector_.reserve(MAX_LIST_SIZE);
+//     pPatternProcessor->patternVector_.clear();
+//     pPatternProcessor->patternVector_.reserve(MAX_LIST_SIZE);
 
-    // start ATPG
-    while (!originalFaultPtrList.empty()) {
-        // meaning the originalFaultPtrList is already left with aborted fault
-        if (originalFaultPtrList.front()->faultState_ == Fault::AB) {
-            break;
-        }
+//     // start ATPG
+//     while (!originalFaultPtrList.empty()) {
+//         // meaning the originalFaultPtrList is already left with aborted fault
+//         if (originalFaultPtrList.front()->faultState_ == Fault::AB) {
+//             break;
+//         }
 
-        // the fault is not popped in previous call of StuckAtFaultATPG()
-        // => the fault is neither aborted nor untestable => a pattern was found => detected fault
-        if (pCurrentFault == originalFaultPtrList.front()) {
-            originalFaultPtrList.front()->faultState_ = Fault::DT;
-            originalFaultPtrList.pop_front();
-            continue;
-        }
+//         // the fault is not popped in previous call of StuckAtFaultATPG()
+//         // => the fault is neither aborted nor untestable => a pattern was found => detected fault
+//         if (pCurrentFault == originalFaultPtrList.front()) {
+//             originalFaultPtrList.front()->faultState_ = Fault::DT;
+//             originalFaultPtrList.pop_front();
+//             continue;
+//         }
 
-        pCurrentFault = originalFaultPtrList.front();
-        const bool isTransitionDelayFault = (pCurrentFault->faultType_ == Fault::STR || pCurrentFault->faultType_ == Fault::STF);
-        if (isTransitionDelayFault) {
-            TransitionDelayFaultATPG(originalFaultPtrList, pPatternProcessor, numOfAtpgUntestableFaults);
-        } else {
-            StuckAtFaultATPG(originalFaultPtrList, pPatternProcessor, numOfAtpgUntestableFaults);
-        }
-    }
-    if (pPatternProcessor->staticCompression_ == PatternProcessor::ON) {
-        staticTestCompressionByReverseFaultSimulation(pPatternProcessor, faultPtrListForSTC);
-    }
+//         pCurrentFault = originalFaultPtrList.front();
+//         const bool isTransitionDelayFault = (pCurrentFault->faultType_ == Fault::STR || pCurrentFault->faultType_ == Fault::STF);
+//         if (isTransitionDelayFault) {
+//             TransitionDelayFaultATPG(originalFaultPtrList, pPatternProcessor, numOfAtpgUntestableFaults);
+//         } else {
+//             StuckAtFaultATPG(originalFaultPtrList, pPatternProcessor, numOfAtpgUntestableFaults);
+//         }
+//     }
+//     if (pPatternProcessor->staticCompression_ == PatternProcessor::ON) {
+//         staticTestCompressionByReverseFaultSimulation(pPatternProcessor, faultPtrListForSTC);
+//     }
 
-    // finsh calculation equivalent faults left
-    for (Fault* pFault : faultPtrListForSTC) {
-        numOfAtpgUntestableFaults += pFault->equivalent_;
-    }
-}
+//     // finsh calculation equivalent faults left
+//     for (Fault* pFault : faultPtrListForSTC) {
+//         numOfAtpgUntestableFaults += pFault->equivalent_;
+//     }
+// }
 
 // **************************************************************************
 // Function   [ Atpg::setupCircuitParameter ]
@@ -520,97 +612,98 @@ void Atpg::TransitionDelayFaultATPG(FaultPtrList& faultPtrListForGen, PatternPro
 //            ]
 // Date       [ started 2020/07/07    last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::StuckAtFaultATPG(FaultPtrList& faultPtrListForGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults) {
-    // std::cout << faultPtrListForGen.size() << " " << faultPtrListForGen.front()->gateID_ << std::endl;
-    SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(*faultPtrListForGen.front(), false);
-    std::cout << "result: " << result << std::endl;
-    if (result == PATTERN_FOUND) {
-        Pattern pattern(pCircuit_);
-        pPatternProcessor->patternVector_.push_back(pattern);
+// void Atpg::StuckAtFaultATPG(FaultPtrList& faultPtrListForGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults) {
+//     // std::cout << faultPtrListForGen.size() << " " << faultPtrListForGen.front()->gateID_ << std::endl;
+//     SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(*faultPtrListForGen.front(), false);
+//     std::cout << "result: " << result << std::endl;
+//     if (result == PATTERN_FOUND) {
+//         Pattern pattern(pCircuit_);
+//         pPatternProcessor->patternVector_.push_back(pattern);
 
-        resetPrevAtpgValStored();
-        clearAllFaultEffectByEvaluation();
-        storeCurrentAtpgVal();
-        writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
+//         resetPrevAtpgValStored();
+//         clearAllFaultEffectByEvaluation();
+//         storeCurrentAtpgVal();
+//         writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
 
-        if (pPatternProcessor->dynamicCompression_ == PatternProcessor::ON) {
-            FaultPtrList faultListTemp = faultPtrListForGen;
-            pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultPtrListForGen);
-            pSimulator_->goodSim();
-            writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
+//         if (pPatternProcessor->dynamicCompression_ == PatternProcessor::ON) {
+//             FaultPtrList faultListTemp = faultPtrListForGen;
+//             pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultPtrListForGen);
+//             pSimulator_->goodSim();
+//             writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
 
-            for (Fault* pFault : faultListTemp) {
-                // skip detected faults
-                if (pFault->faultState_ == Fault::DT) {
-                    continue;
-                }
+//             for (Fault* pFault : faultListTemp) {
+//                 // skip detected faults
+//                 if (pFault->faultState_ == Fault::DT) {
+//                     continue;
+//                 }
 
-                Gate* pGateForActivation = getGateForFaultActivation(*pFault);
-                if (((pGateForActivation->atpgVal_ == L) && (pFault->faultType_ == Fault::SA0)) ||
-                    ((pGateForActivation->atpgVal_ == H) && (pFault->faultType_ == Fault::SA1))) {
-                    continue;
-                }
+//                 Gate* pGateForActivation = getGateForFaultActivation(*pFault);
+//                 if (((pGateForActivation->atpgVal_ == L) && (pFault->faultType_ == Fault::SA0)) ||
+//                     ((pGateForActivation->atpgVal_ == H) && (pFault->faultType_ == Fault::SA1))) {
+//                     continue;
+//                 }
 
-                // Activation check
-                if (pGateForActivation->atpgVal_ != X) {
-                    if ((pFault->faultType_ == Fault::SA0) || (pFault->faultType_ == Fault::SA1)) {
-                        setGateAtpgValAndRunImplication((*pGateForActivation), X);
-                    } else {
-                        continue;
-                    }
-                }
+//                 // Activation check
+//                 if (pGateForActivation->atpgVal_ != X) {
+//                     if ((pFault->faultType_ == Fault::SA0) || (pFault->faultType_ == Fault::SA1)) {
+//                         setGateAtpgValAndRunImplication((*pGateForActivation), X);
+//                     } else {
+//                         continue;
+//                     }
+//                 }
 
-                if (xPathExists(pGateForActivation)) {
-                    // TO-DO homework 05 implement DTC here end of TO-DO
-                    if (generateSinglePatternOnTargetFault(*pFault, true) == PATTERN_FOUND) {
-                        resetPrevAtpgValStored();
-                        clearAllFaultEffectByEvaluation();
-                        storeCurrentAtpgVal();
-                        writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
-                    } else {
-                        for (Gate& gate : pCircuit_->circuitGates_) {
-                            gate.atpgVal_ = gate.prevAtpgValStored_;
-                        }
-                    }
-                } else {
-                    setGateAtpgValAndRunImplication((*pGateForActivation), pGateForActivation->prevAtpgValStored_);
-                }
-            }
-        }
+//                 if (xPathExists(pGateForActivation)) {
+//                     // TO-DO homework 05 implement DTC here end of TO-DO
+//                     if (generateSinglePatternOnTargetFault(*pFault, true) == PATTERN_FOUND) {
+//                         resetPrevAtpgValStored();
+//                         clearAllFaultEffectByEvaluation();
+//                         storeCurrentAtpgVal();
+//                         writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
+//                     } else {
+//                         for (Gate& gate : pCircuit_->circuitGates_) {
+//                             gate.atpgVal_ = gate.prevAtpgValStored_;
+//                         }
+//                     }
+//                 } else {
+//                     setGateAtpgValAndRunImplication((*pGateForActivation), pGateForActivation->prevAtpgValStored_);
+//                 }
+//             }
+//         }
 
-        clearAllFaultEffectByEvaluation();
-        storeCurrentAtpgVal();
-        writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
+//         clearAllFaultEffectByEvaluation();
+//         storeCurrentAtpgVal();
+//         writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
 
-        if (pPatternProcessor->XFill_ == PatternProcessor::ON) {
-            // Randomly fill the pats_.back().
-            // Note that the v_, gh_, gl_, fh_ and fl_ do not be changed.
-            randomFill(pPatternProcessor->patternVector_.back());
-        }
+//         if (pPatternProcessor->XFill_ == PatternProcessor::ON) {
+//             // Randomly fill the pats_.back().
+//             // Note that the v_, gh_, gl_, fh_ and fl_ do not be changed.
+//             randomFill(pPatternProcessor->patternVector_.back());
+//         }
 
-        //  This function will assign pi/ppi stored in pats_.back() to
-        //  the gh_ and gl_ in each gate, and then it will run fault
-        //  simulation to drop fault.
+//         //  This function will assign pi/ppi stored in pats_.back() to
+//         //  the gh_ and gl_ in each gate, and then it will run fault
+//         //  simulation to drop fault.
 
-        pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultPtrListForGen);
-        // cxp
-        // pSimulator_->assignPatternToCircuitInputs(pPatternProcessor->patternVector_.back());
+//         pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultPtrListForGen);
+//         // cxp
+//         // pSimulator_->assignPatternToCircuitInputs(pPatternProcessor->patternVector_.back());
 
-        // After pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(),faultListToGen) , the pi/ppi
-        // values have been passed to gh_ and gl_ of each gate.  Therefore, we can
-        // directly use "writeGoodSimValToPatternPO" to perform goodSim to get the PoValue.
-        pSimulator_->goodSim();
-        writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
-    } else if (result == FAULT_UNTESTABLE) {
-        faultPtrListForGen.front()->faultState_ = Fault::AU;
-        numOfAtpgUntestableFaults += faultPtrListForGen.front()->equivalent_;
-        faultPtrListForGen.pop_front();
-    } else {
-        faultPtrListForGen.front()->faultState_ = Fault::AB;
-        faultPtrListForGen.push_back(faultPtrListForGen.front());
-        faultPtrListForGen.pop_front();
-    }
-}
+//         // After pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(),faultListToGen) , the pi/ppi
+//         // values have been passed to gh_ and gl_ of each gate.  Therefore, we can
+//         // directly use "writeGoodSimValToPatternPO" to perform goodSim to get the PoValue.
+//         pSimulator_->goodSim();
+//         writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
+//         std::cout << "pattern vector size: " << pPatternProcessor->patternVector_.size() << std::endl;
+//     } else if (result == FAULT_UNTESTABLE) {
+//         faultPtrListForGen.front()->faultState_ = Fault::AU;
+//         numOfAtpgUntestableFaults += faultPtrListForGen.front()->equivalent_;
+//         faultPtrListForGen.pop_front();
+//     } else {
+//         faultPtrListForGen.front()->faultState_ = Fault::AB;
+//         faultPtrListForGen.push_back(faultPtrListForGen.front());
+//         faultPtrListForGen.pop_front();
+//     }
+// }
 
 // **************************************************************************
 // Function   [ Atpg::getGateForFaultActivation ]
