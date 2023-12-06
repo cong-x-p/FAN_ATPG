@@ -69,7 +69,7 @@ class Atpg {
     // void parallelStuckAtFaultATPG(FaultPtrList& faultListToGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults) {
     //     StuckAtFaultATPG(faultListToGen, pPatternProcessor, numOfAtpgUntestableFaults);
     // }
-    void StuckAtFaultATPG(FaultPtrList& faultListToGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults);
+    void StuckAtFaultATPG(FaultPtrList* faultListToGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults);
     void parallelStuckAtFaultATPG(FaultPtrList& faultPtrListForGen, int& numOfAtpgUntestableFaults, Pattern& patternRes);
 
    private:

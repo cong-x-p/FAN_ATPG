@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iomanip>
 
+#include <omp.h>
 #include <thread>
 
 #include "atpg_cmd.h"
@@ -1141,13 +1142,23 @@ bool RunAtpgCmd::exec(const std::vector<std::string>& argv) {
     }
 
     std::vector<PatternProcessor*> parallelPatternProcessors;
+    parallelPatternProcessors.reserve(originalFaultPtrList.size());
     std::vector<std::thread> threads;
-    std::vector<Pattern> patterns;
-    int count = 1;
+    std::vector<Pattern*> patterns;
 
-    for (Fault* fault : originalFaultPtrList) {
-        FaultPtrList faultListforParallel;
-        faultListforParallel.push_back(fault);
+    std::vector<Fault*> faults;
+    faults.assign(originalFaultPtrList.begin(), originalFaultPtrList.end());
+    std::cout << "faults size: " << faults.size() << std::endl;
+
+    std::vector<FaultPtrList> faultPtrListVec;
+    faultPtrListVec.reserve(originalFaultPtrList.size());
+
+    // #pragma omp parallel for
+    for (Fault* fault : faults) {
+        // FaultPtrList faultListforParallel;
+        faultPtrListVec.emplace_back();
+        faultPtrListVec.back().push_back(fault);
+        // faultListforParallel.push_back(fault);
 
         CoreNs::Circuit* parallelCir = new CoreNs::Circuit();
         parallelCir->buildCircuit(fanMgr_->nl, 1);
@@ -1157,34 +1168,45 @@ bool RunAtpgCmd::exec(const std::vector<std::string>& argv) {
         CoreNs::Atpg* parallelAtpg = new CoreNs::Atpg(parallelCir, parallelSim);
         parallelAtpg->parallelsetupCircuitParameter();
 
-        // CoreNs::PatternProcessor* parallelPatternProcessor;
-        // parallelPatternProcessor = new CoreNs::PatternProcessor;
+        CoreNs::PatternProcessor* parallelPatternProcessor = new CoreNs::PatternProcessor;
         // parallelPatternProcessor->init(parallelCir);
-        // parallelPatternProcessor->patternVector_.clear();
-        // parallelPatternProcessor->patternVector_.reserve(MAX_LIST_SIZE);
+        parallelPatternProcessor->staticCompression_ = fanMgr_->pcoll->staticCompression_;
+        parallelPatternProcessor->dynamicCompression_ = fanMgr_->pcoll->dynamicCompression_;
+        parallelPatternProcessor->XFill_ = fanMgr_->pcoll->XFill_;
+        parallelPatternProcessor->type_ = fanMgr_->pcoll->type_;
+        parallelPatternProcessor->numPI_ = fanMgr_->pcoll->numPI_;
+        parallelPatternProcessor->numPPI_ = fanMgr_->pcoll->numPPI_;
+        parallelPatternProcessor->numSI_ = fanMgr_->pcoll->numSI_;
+        parallelPatternProcessor->numPO_ = fanMgr_->pcoll->numPO_;
+        parallelPatternProcessor->patternVector_ = fanMgr_->pcoll->patternVector_;
+        parallelPatternProcessor->pPIorder_ = fanMgr_->pcoll->pPIorder_;
+        parallelPatternProcessor->pPPIorder_ = fanMgr_->pcoll->pPPIorder_;
+        parallelPatternProcessor->pPOorder_ = fanMgr_->pcoll->pPOorder_;
+        parallelPatternProcessor->patternVector_.clear();
+        parallelPatternProcessor->patternVector_.reserve(MAX_LIST_SIZE);
 
-        // parallelPatternProcessors.push_back(parallelPatternProcessor);
+        parallelPatternProcessors.push_back(parallelPatternProcessor);
 
-        CoreNs::Pattern pattern(parallelCir);
-        patterns.push_back(pattern);
+        // CoreNs::Pattern* pattern = new Pattern(parallelCir);
+        // patterns.push_back(pattern);
 
-        const double faultPtrListSize = (double)(faultListforParallel.size());
+        const double faultPtrListSize = (double)(faultPtrListVec.back().size());
         int numOfAtpgUntestableFaults = 0;
         numOfAtpgUntestableFaults = 0;
 
-        // threads.push_back(std::thread(&CoreNs::Atpg::StuckAtFaultATPG, parallelAtpg, std::ref(faultListforParallel), std::ref(parallelPatternProcessor), std::ref(numOfAtpgUntestableFaults)));
-        threads.push_back(std::thread(&CoreNs::Atpg::parallelStuckAtFaultATPG, parallelAtpg, std::ref(faultListforParallel), std::ref(numOfAtpgUntestableFaults), std::ref(pattern)));
+        // parallelAtpg->StuckAtFaultATPG(faultListforParallel, parallelPatternProcessor, numOfAtpgUntestableFaults);
+
+        threads.push_back(std::thread(&CoreNs::Atpg::StuckAtFaultATPG, parallelAtpg, &(faultPtrListVec.back()), parallelPatternProcessor, std::ref(numOfAtpgUntestableFaults)));
     }
 
     for (auto& i : threads) {
         i.join();
-        std::cout << "end" << std::endl;
     }
 
-    // std::cout << parallelPatternProcessors.size() << std::endl;
-    // for (int i = 0; i < parallelPatternProcessors.size(); i++) {
-    //     fanMgr_->pcoll->patternVector_.push_back(parallelPatternProcessors[i]->patternVector_[0]);
-    // }
+    std::cout << parallelPatternProcessors.size() << std::endl;
+    for (int i = 0; i < parallelPatternProcessors.size(); i++) {
+        fanMgr_->pcoll->patternVector_.push_back(parallelPatternProcessors[i]->patternVector_[0]);
+    }
 
     // list;
     // for () {
@@ -1402,7 +1424,8 @@ bool WriteStilCmd::exec(const std::vector<std::string>& argv) {
         return false;
     }
 
-    std::cout << "#  Writing pattern to STIL...\n";
+    std::cout << "#  Writing pattern to STIL...\n"
+              << std::endl;
     PatternWriter writer(fanMgr_->pcoll, fanMgr_->cir);
 
     if (!writer.writeSTIL(optMgr_.getParsedArg(0).c_str())) {

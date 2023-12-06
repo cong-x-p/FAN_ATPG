@@ -7,7 +7,7 @@ set_fault_type saf
 add_fault --all
 set_static_compression off
 set_dynamic_compression off
-set_X-Fill on
+set_X-Fill off
 run_atpg
 report_statistics > /home/congxiping/FAN_ATPG/rpt/FAN_s27_debug.rpt
 write_pattern /home/congxiping/FAN_ATPG/pat/FAN_s27_debug.pat
