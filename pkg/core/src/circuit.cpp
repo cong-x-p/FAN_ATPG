@@ -227,7 +227,6 @@ void Circuit::createCircuitPI() {
         if (piPort->type_ != Port::INPUT || piGateID < 0) {
             continue;
         }
-        std::cout << "PI: " << piPort->name_ << std::endl;
         circuitGates_[piGateID].gateId_ = piGateID;
         circuitGates_[piGateID].cellId_ = i;
         circuitGates_[piGateID].primitiveId_ = 0;
@@ -250,7 +249,6 @@ void Circuit::createCircuitPPI() {
     Cell* top = pNetlist_->getTop();
     for (int i = 0; i < numPPI_; ++i) {
         Cell* ppiCell = top->getCell(i);
-        std::cout << "PPI: " << ppiCell->name_ << std::endl;
         int ppiGateID = cellIndexToGateIndex_[i];
         circuitGates_[ppiGateID].gateId_ = ppiGateID;
         circuitGates_[ppiGateID].cellId_ = i;
@@ -523,7 +521,6 @@ void Circuit::createCircuitPO() {
         if (poPort->type_ != Port::OUTPUT || poGateID < 0) {
             continue;
         }
-        std::cout << "PO: " << poPort->name_ << std::endl;
         circuitGates_[poGateID].gateId_ = poGateID;
         circuitGates_[poGateID].cellId_ = i;
         circuitGates_[poGateID].primitiveId_ = 0;
@@ -714,8 +711,6 @@ void Circuit::assignMinLevelOfFanins() {
         Gate* gate = &circuitGates_[i];
         int minLvl = gate->numLevel_;
         bool temp = gate->gateId_ == cellIndexToGateIndex_[gate->cellId_];
-        std::cout << temp << std::endl;
-        std::cout << pNetlist_->getTop()->getCell(gate->cellId_)->name_ << " type: " << gate->gateType_ << " FO: " << gate->numFO_ << std::endl;
         for (int j = 0; j < gate->numFI_; ++j) {
             if (circuitGates_[gate->faninVector_[j]].numLevel_ < minLvl) {
                 minLvl = circuitGates_[gate->faninVector_[j]].numLevel_;
