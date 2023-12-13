@@ -710,7 +710,6 @@ void Circuit::assignMinLevelOfFanins() {
     for (int i = 0; i < totalGate_; ++i) {
         Gate* gate = &circuitGates_[i];
         int minLvl = gate->numLevel_;
-        bool temp = gate->gateId_ == cellIndexToGateIndex_[gate->cellId_];
         for (int j = 0; j < gate->numFI_; ++j) {
             if (circuitGates_[gate->faninVector_[j]].numLevel_ < minLvl) {
                 minLvl = circuitGates_[gate->faninVector_[j]].numLevel_;

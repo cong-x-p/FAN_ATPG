@@ -1,0 +1,6303 @@
+#  ==========================================================================
+#
+#                                   FAN ATPG
+#
+#              Copyright(c) Laboratory of Dependable Systems(II),
+#                Graduate Institute of Electronics Engineering,
+#                          National Taiwan University
+#                             All Rights Reserved.
+#
+#  ==========================================================================
+#
+#  Kernel:   Linux
+#  Platform: x86_64
+#  Memory:   1.54757e+06 MB
+#
+/atpg_s510.script 1> read_lib techlib/mod_nangate45.mdt
+#  Reading technology library ...
+#  Finished reading library `techlib/mod_nangate45.mdt'    0.006441 s    9.05859 MB
+/atpg_s510.script 2> read_netlist mod_netlist/s510.v
+#  Reading netlist ...
+#  Finished reading netlist `mod_netlist/s510.v'    0.001739 s    9.83203 MB
+/atpg_s510.script 3> report_netlist
+#  netlist information
+#    number of modules: 1
+#    modules:           s510
+#    current module:    s510
+#    number of ports:   30
+#    number of cells:   217
+#    number of nets:    240
+/atpg_s510.script 4> build_circuit --frame 1
+#  Building circuit ...
+#  Finished building circuit    0.001034 s    9.96094 MB
+/atpg_s510.script 5> report_circuit
+#  circuit information
+#    netlist:         s510
+#    number of PIs:   19
+#    number of PPIs:  6
+#    number of POs:   7
+#    number of combs: 211
+#    number of gates: 249
+#    number of nets:  456
+/atpg_s510.script 6> set_fault_type saf
+#  fault type set to stuck-at fault
+/atpg_s510.script 7> add_fault --all
+#  Building fault list ...
+#  Finished building fault list    5.6e-05 s    10.0898 MB
+/atpg_s510.script 8> set_static_compression off
+#  static compression set to off
+/atpg_s510.script 9> set_dynamic_compression off
+#  dynamic compression set to off
+/atpg_s510.script 10> set_X-Fill on
+#  X-Fill set to on
+/atpg_s510.script 11> run_atpg
+#  Performing pattern generation ...
+faults size: 890
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+result: 0
+890
+#  Finished pattern generation    0.622029 s    423.688 MB
+/atpg_s510.script 12> report_statistics > rpt/FAN_s510.rpt
+/atpg_s510.script 13> write_pattern pat/FAN_s510.pat
+#  Writing pattern to `pat/FAN_s510.pat' ...
+/atpg_s510.script 14> write_to_STIL pat/FAN_s510.stil
+#  Writing pattern to STIL...
+
+==========
+PI_ORDER CK test_si test_se john cnt13 cnt21 cnt284 pcnt6 cnt261 cnt44 pcnt12 pcnt17 cnt591 cnt45 cnt567 pcnt27 cnt283 cnt272 cnt10 cnt511 pcnt241 cnt509 
+SCAN_ORDER U_st_5 U_st_4 U_st_3 U_st_2 U_st_1 U_st_0 
+PO_ORDER test_so csm pclr pc cclr vsync cblank csync 
+BASIC_SCAN 890
+
+pattern_1
+pPI1 1101111001101010100
+pPO1 LLLLLLL
+pPPI1 011010
+pPPO HHHLHL
+
+pattern_2
+pPI1 0101111001101010100
+pPO1 LLLLLLL
+pPPI1 011010
+pPPO LHHLHL
+
+pattern_3
+pPI1 1101111001101011000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LLLLLL
+
+pattern_4
+pPI1 1001111001101011000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_5
+pPI1 1011110100011010110
+pPO1 LLLLHLL
+pPPI1 000010
+pPPO HLLLHL
+
+pattern_6
+pPI1 1001110100011010110
+pPO1 LLLLHLL
+pPPI1 000010
+pPPO LLLLHL
+
+pattern_7
+pPI1 1011111001101011000
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO HLLLLL
+
+pattern_8
+pPI1 1010111001101011000
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO LLHLLL
+
+pattern_9
+pPI1 1011111100110101100
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO HLLLLL
+
+pattern_10
+pPI1 1011011100110101100
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO LLLLLL
+
+pattern_11
+pPI1 1011111001101011000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_12
+pPI1 1011101001101011000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO HLHLLH
+
+pattern_13
+pPI1 1011111000110101100
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_14
+pPI1 1011110000110101100
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO LHLLLL
+
+pattern_15
+pPI1 1011111100110101100
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HHLLLL
+
+pattern_16
+pPI1 1011111000110101100
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_17
+pPI1 1011111010110101100
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_18
+pPI1 1011111000110101100
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HHLLLL
+
+pattern_19
+pPI1 1011110011101011000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_20
+pPI1 1011110010101011000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO LLLHLL
+
+pattern_21
+pPI1 1011110011101011000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO HLHLHL
+
+pattern_22
+pPI1 1011110011001011000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO LLHLHL
+
+pattern_23
+pPI1 1011110011010101100
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HLLHLL
+
+pattern_24
+pPI1 1011110011000101100
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO LHLHLL
+
+pattern_25
+pPI1 1011110011011101100
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HHLHLL
+
+pattern_26
+pPI1 1011110011010101100
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HLLHLL
+
+pattern_27
+pPI1 1011110001101101100
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO HHLHHL
+
+pattern_28
+pPI1 1011110001101001100
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO LHLHHL
+
+pattern_29
+pPI1 1011110011010111000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_30
+pPI1 1011110011010101000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO LLHHLL
+
+pattern_31
+pPI1 1011110011010111000
+pPO1 LLLLHLH
+pPPI1 011110
+pPPO HHHHHL
+
+pattern_32
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011110
+pPPO LHHHHL
+
+pattern_33
+pPI1 1011110011010110100
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO HLHHLL
+
+pattern_34
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_35
+pPI1 1011110011010110110
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO HHHHLL
+
+pattern_36
+pPI1 1011110011010110100
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO HLHHLL
+
+pattern_37
+pPI1 1011110011010110001
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO HLHHLH
+
+pattern_38
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO LLHHLH
+
+pattern_39
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000101
+pPPO LLLHLH
+
+pattern_40
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_41
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_42
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_43
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_44
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_45
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO LLHHLH
+
+pattern_46
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000101
+pPPO LLLHLH
+
+pattern_47
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111011
+pPPO LHHHLH
+
+pattern_48
+pPI1 1011110011010110000
+pPO1 LLLHLLH
+pPPI1 101011
+pPPO LHHHLH
+
+pattern_49
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_50
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 011010
+pPPO HHHLHL
+
+pattern_51
+pPI1 1011110001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_52
+pPI1 1011111001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO HHLLLH
+
+pattern_53
+pPI1 1011101001101011000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO HLHLLH
+
+pattern_54
+pPI1 1011111001101011000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_55
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_56
+pPI1 1011110011010110100
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO HLHHLL
+
+pattern_57
+pPI1 1011110011000101100
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO LHLHLL
+
+pattern_58
+pPI1 1011110011010101100
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HLLHLL
+
+pattern_59
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 010010
+pPPO HHLLHL
+
+pattern_60
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_61
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_62
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 110010
+pPPO LLHLLL
+
+pattern_63
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_64
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO LLHHLH
+
+pattern_65
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_66
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_67
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_68
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_69
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_70
+pPI1 1011110011010110000
+pPO1 HLLLHHH
+pPPI1 011101
+pPPO LHHLHL
+
+pattern_71
+pPI1 1011111000110101100
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_72
+pPI1 1011111100110101100
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HHLLLL
+
+pattern_73
+pPI1 1011111000110101100
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HHLLLL
+
+pattern_74
+pPI1 1011111010110101100
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_75
+pPI1 1011110011010101000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO LLHHLL
+
+pattern_76
+pPI1 1011110010101011100
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO LLLHLL
+
+pattern_77
+pPI1 1011110011010111000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_78
+pPI1 1011110010101001100
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO LLLHLL
+
+pattern_79
+pPI1 0101111001101010100
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO LHHLLH
+
+pattern_80
+pPI1 0101111001101011100
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LLLLLL
+
+pattern_81
+pPI1 0101111001101011100
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO HHHLLH
+
+pattern_82
+pPI1 0101111001101010100
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LLLLLL
+
+pattern_83
+pPI1 0101111001101010100
+pPO1 LLLLLLL
+pPPI1 011010
+pPPO LHHLHL
+
+pattern_84
+pPI1 1101111001101010100
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LLLLLL
+
+pattern_85
+pPI1 1101111001101010100
+pPO1 LLLLLLL
+pPPI1 011010
+pPPO HHHLHL
+
+pattern_86
+pPI1 0101111001101010100
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LLLLLL
+
+pattern_87
+pPI1 1011111001101011000
+pPO1 LLLLHLL
+pPPI1 001110
+pPPO HLHHHL
+
+pattern_88
+pPI1 1001111001101011000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_89
+pPI1 1011111001101011000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_90
+pPI1 1001111001101011000
+pPO1 LLLLHLL
+pPPI1 001110
+pPPO LLHHHL
+
+pattern_91
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101010
+pPPO LHLHLL
+
+pattern_92
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 110010
+pPPO LLHLLL
+
+pattern_93
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101010
+pPPO LHLHLL
+
+pattern_94
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_95
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_96
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_97
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_98
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_99
+pPI1 1010111010110101100
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HHHLLL
+
+pattern_100
+pPI1 1011111000110101100
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HHLLLL
+
+pattern_101
+pPI1 1010111001101011000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HHHLLL
+
+pattern_102
+pPI1 1011111010110101100
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_103
+pPI1 1011110011010110000
+pPO1 HLLLHHH
+pPPI1 101101
+pPPO LHHHLH
+
+pattern_104
+pPI1 1011110011010110000
+pPO1 HLLLHHH
+pPPI1 011101
+pPPO LHHLHL
+
+pattern_105
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO LLHHLH
+
+pattern_106
+pPI1 1011110011010110000
+pPO1 HLLHHHH
+pPPI1 111101
+pPPO LHHHHH
+
+pattern_107
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_108
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO HLLLLL
+
+pattern_109
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000001
+pPPO LLLLLH
+
+pattern_110
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_111
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100011
+pPPO LHLHLL
+
+pattern_112
+pPI1 1011110011010110000
+pPO1 HLLLHHH
+pPPI1 011101
+pPPO LHHLHL
+
+pattern_113
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO LHLHLH
+
+pattern_114
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110001
+pPPO LHHHLL
+
+pattern_115
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_116
+pPI1 1011110011010110000
+pPO1 LLLHHLL
+pPPI1 111001
+pPPO LLLHLH
+
+pattern_117
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_118
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_119
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100101
+pPPO LHLHLH
+
+pattern_120
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_121
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_122
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100101
+pPPO LHLHLH
+
+pattern_123
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_124
+pPI1 1011110011010110000
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_125
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_126
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_127
+pPI1 1011110011011011000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_128
+pPI1 1011110011011011000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HHLHLL
+
+pattern_129
+pPI1 1011110010101011000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO LLLHLL
+
+pattern_130
+pPI1 1011110011101001100
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO LLHHLL
+
+pattern_131
+pPI1 1011110011101011000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_132
+pPI1 1011110010101001100
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO LLLHLL
+
+pattern_133
+pPI1 1011110011010110000
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_134
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_135
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_136
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_137
+pPI1 1011111010110101100
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_138
+pPI1 1010111000110101100
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HHHLLL
+
+pattern_139
+pPI1 1011111000110101100
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HHLLLL
+
+pattern_140
+pPI1 1011110011101011000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_141
+pPI1 1011110011011101100
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HHLHLL
+
+pattern_142
+pPI1 1011110011000101100
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO LHLHLL
+
+pattern_143
+pPI1 1011110011011011000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HHLHLL
+
+pattern_144
+pPI1 1011110011010101100
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HLLHLL
+
+pattern_145
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_146
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 011010
+pPPO HHHLHL
+
+pattern_147
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_148
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_149
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 011010
+pPPO HHHLHL
+
+pattern_150
+pPI1 1011110011010110000
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_151
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_152
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_153
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_154
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 110010
+pPPO LLHLLL
+
+pattern_155
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_156
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_157
+pPI1 1011111001101011000
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO HLLLLL
+
+pattern_158
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_159
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_160
+pPI1 1101111100110101100
+pPO1 LLLLLLL
+pPPI1 011010
+pPPO HHHLHL
+
+pattern_161
+pPI1 1011110101101011000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_162
+pPI1 1011110101101011000
+pPO1 LLLLHLL
+pPPI1 000010
+pPPO HLLLHL
+
+pattern_163
+pPI1 1011110101101011000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_164
+pPI1 1011110101101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO LHLLLL
+
+pattern_165
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_166
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO HLLLLL
+
+pattern_167
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_168
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_169
+pPI1 1011101001101011000
+pPO1 LLLHHLH
+pPPI1 100001
+pPPO LHLLLH
+
+pattern_170
+pPI1 1011101001101011000
+pPO1 HLLLHHH
+pPPI1 101101
+pPPO LHHHLH
+
+pattern_171
+pPI1 1011101001101011000
+pPO1 LLLHHLH
+pPPI1 100001
+pPPO LHLLLH
+
+pattern_172
+pPI1 1011101001101011000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO HLHLLH
+
+pattern_173
+pPI1 1011111001010101100
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_174
+pPI1 1001110100011010110
+pPO1 LLLLHLL
+pPPI1 000010
+pPPO LLLLHL
+
+pattern_175
+pPI1 1011111100110101100
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_176
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_177
+pPI1 1011110100011010110
+pPO1 LLLLHLL
+pPPI1 000010
+pPPO HLLLHL
+
+pattern_178
+pPI1 1011111000110101100
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_179
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_180
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_181
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_182
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000101
+pPPO LLLHLH
+
+pattern_183
+pPI1 1011110011010110000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO LHLLLL
+
+pattern_184
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_185
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_186
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_187
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_188
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_189
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_190
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_191
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_192
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_193
+pPI1 1011110011010110000
+pPO1 LLLHHLL
+pPPI1 101000
+pPPO LLLLHL
+
+pattern_194
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000101
+pPPO LLLHLH
+
+pattern_195
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_196
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_197
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_198
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_199
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100001
+pPPO LHLLLH
+
+pattern_200
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_201
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_202
+pPI1 1001111001101011000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_203
+pPI1 1101111001101011000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO HHHLLH
+
+pattern_204
+pPI1 1001111001101011000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_205
+pPI1 1101111001101011000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LLLLLL
+
+pattern_206
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110001
+pPPO LHHHLL
+
+pattern_207
+pPI1 1011110011010110000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO LHLLLL
+
+pattern_208
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110001
+pPPO LHHHLL
+
+pattern_209
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_210
+pPI1 1011111100110101100
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HHLLLL
+
+pattern_211
+pPI1 1011110000110101100
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO LHLLLL
+
+pattern_212
+pPI1 1011110101101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO LHLLLL
+
+pattern_213
+pPI1 1011111000110101100
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_214
+pPI1 1011110011010110110
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO HHHHLL
+
+pattern_215
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_216
+pPI1 1011110011010110100
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO HLHHLL
+
+pattern_217
+pPI1 1011110011010110010
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_218
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_219
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_220
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_221
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_222
+pPI1 1011101001101011000
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_223
+pPI1 1011101001101011000
+pPO1 LLLHHLL
+pPPI1 111001
+pPPO LLLHLH
+
+pattern_224
+pPI1 1011101001101011000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO HLHLLH
+
+pattern_225
+pPI1 1011101001101011000
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_226
+pPI1 1011110011010110010
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_227
+pPI1 1011110011010110010
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_228
+pPI1 1011110011010110010
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_229
+pPI1 1011110011010110010
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_230
+pPI1 1011110011010110000
+pPO1 LLLHHLL
+pPPI1 111001
+pPPO LLLHLH
+
+pattern_231
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110101
+pPPO LLHHLH
+
+pattern_232
+pPI1 1011110011010110000
+pPO1 HLLHHHH
+pPPI1 111101
+pPPO LHHHHH
+
+pattern_233
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_234
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_235
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_236
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100110
+pPPO LHLHHL
+
+pattern_237
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 110010
+pPPO LLHLLL
+
+pattern_238
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO LLHLHL
+
+pattern_239
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_240
+pPI1 1011110011010110000
+pPO1 LLLHLLH
+pPPI1 101011
+pPPO LHHHLH
+
+pattern_241
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO LHLHLH
+
+pattern_242
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_243
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_244
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_245
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_246
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO LHHLLH
+
+pattern_247
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_248
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110101
+pPPO LLHHLH
+
+pattern_249
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 010010
+pPPO HHLLHL
+
+pattern_250
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_251
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO LHHLLH
+
+pattern_252
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110101
+pPPO LLHHLH
+
+pattern_253
+pPI1 1011110011010110000
+pPO1 HLLHHHH
+pPPI1 111101
+pPPO LHHHHH
+
+pattern_254
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_255
+pPI1 0101111001101011100
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO HHHLLH
+
+pattern_256
+pPI1 1101111001101010100
+pPO1 LLLLLLL
+pPPI1 011010
+pPPO HHHLHL
+
+pattern_257
+pPI1 0101111001101010100
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LLLLLL
+
+pattern_258
+pPI1 1011110011010111000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO HHHLLH
+
+pattern_259
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_260
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_261
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 001110
+pPPO HLHHHL
+
+pattern_262
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_263
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_264
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000111
+pPPO LLLHHH
+
+pattern_265
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_266
+pPI1 1011110011010110000
+pPO1 HLLHHHH
+pPPI1 111101
+pPPO LHHHHH
+
+pattern_267
+pPI1 1011110011010110000
+pPO1 HLLLHHH
+pPPI1 011101
+pPPO LHHLHL
+
+pattern_268
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100011
+pPPO LHLHLL
+
+pattern_269
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110101
+pPPO LLHHLH
+
+pattern_270
+pPI1 1011110011010110000
+pPO1 HLLLHHH
+pPPI1 011101
+pPPO LHHLHL
+
+pattern_271
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_272
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO LLHLHL
+
+pattern_273
+pPI1 1011110011010110000
+pPO1 LLLHHLL
+pPPI1 101000
+pPPO LLLLHL
+
+pattern_274
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO LLHLHL
+
+pattern_275
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_276
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_277
+pPI1 1011110011010110000
+pPO1 HLLHHHH
+pPPI1 111101
+pPPO LHHHHH
+
+pattern_278
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_279
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011110
+pPPO LHHHHL
+
+pattern_280
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101010
+pPPO LHLHLL
+
+pattern_281
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_282
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO HHLHHL
+
+pattern_283
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_284
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000001
+pPPO LLLLLH
+
+pattern_285
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_286
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_287
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_288
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 110010
+pPPO LLHLLL
+
+pattern_289
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100110
+pPPO LHLHHL
+
+pattern_290
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_291
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_292
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO HHLHHL
+
+pattern_293
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HLLHLL
+
+pattern_294
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_295
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_296
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011110
+pPPO LHHHHL
+
+pattern_297
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_298
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_299
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_300
+pPI1 1001111001101011000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_301
+pPI1 1101111001101011000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LLLLLL
+
+pattern_302
+pPI1 1001111001101011000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_303
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_304
+pPI1 1011111001101011000
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO HLLLLL
+
+pattern_305
+pPI1 1010111001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO HHLLLH
+
+pattern_306
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_307
+pPI1 1010111001101011000
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO LLHLLL
+
+pattern_308
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000101
+pPPO LLLHLH
+
+pattern_309
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_310
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_311
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_312
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_313
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100101
+pPPO LHLHLH
+
+pattern_314
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100101
+pPPO LHLHLH
+
+pattern_315
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_316
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_317
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HLLHLL
+
+pattern_318
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_319
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_320
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_321
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000101
+pPPO LLLHLH
+
+pattern_322
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110101
+pPPO LLHHLH
+
+pattern_323
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_324
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100001
+pPPO LHLLLH
+
+pattern_325
+pPI1 1101111001101011010
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LLLLLL
+
+pattern_326
+pPI1 1011110011010110010
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_327
+pPI1 1101111001101011010
+pPO1 LLLLHLL
+pPPI1 000011
+pPPO HLLLHH
+
+pattern_328
+pPI1 1011110011010110010
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_329
+pPI1 1001111001101011000
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO HLLLLL
+
+pattern_330
+pPI1 1001111001101011100
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO HLHHLL
+
+pattern_331
+pPI1 1001111001101011000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_332
+pPI1 1001111001101011000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_333
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_334
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100110
+pPPO LHLHHL
+
+pattern_335
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_336
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_337
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_338
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110001
+pPPO LHHHLL
+
+pattern_339
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_340
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_341
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_342
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000010
+pPPO HLLLHL
+
+pattern_343
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011110
+pPPO LHHHHL
+
+pattern_344
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101010
+pPPO LHLHLL
+
+pattern_345
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO HHLHHL
+
+pattern_346
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_347
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO LLHLHL
+
+pattern_348
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_349
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_350
+pPI1 1011110011010110000
+pPO1 LLLHHLL
+pPPI1 101000
+pPPO LLLLHL
+
+pattern_351
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_352
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_353
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100011
+pPPO LHLHLL
+
+pattern_354
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_355
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO LHHLLH
+
+pattern_356
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 110010
+pPPO LLHLLL
+
+pattern_357
+pPI1 1011110101110010110
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HLLHLL
+
+pattern_358
+pPI1 1101111100110101100
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LLLLLL
+
+pattern_359
+pPI1 1011110101101011000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_360
+pPI1 1011110101101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO LHLLLL
+
+pattern_361
+pPI1 1011110101110101100
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_362
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000001
+pPPO LLLLLH
+
+pattern_363
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_364
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_365
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000001
+pPPO LLLLLH
+
+pattern_366
+pPI1 1011111000111010110
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_367
+pPI1 1011110011011011000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_368
+pPI1 1011110011011011000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HHLHLL
+
+pattern_369
+pPI1 1101111001101101100
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LLLLLL
+
+pattern_370
+pPI1 1011110011101011000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_371
+pPI1 1011110011010111000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_372
+pPI1 1011110010101001100
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO LLLHLL
+
+pattern_373
+pPI1 1011110011101011000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_374
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_375
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000101
+pPPO LLLHLH
+
+pattern_376
+pPI1 1011110011010110000
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_377
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_378
+pPI1 1011101001101011000
+pPO1 LLLHHLH
+pPPI1 100001
+pPPO LHLLLH
+
+pattern_379
+pPI1 1011101001101011000
+pPO1 LLLHHLL
+pPPI1 101000
+pPPO LLLLHL
+
+pattern_380
+pPI1 1011101001101011000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO HLHLLH
+
+pattern_381
+pPI1 1011101001101011000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_382
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_383
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_384
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_385
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO HLLLLL
+
+pattern_386
+pPI1 1011110011101011000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_387
+pPI1 1011110011010101100
+pPO1 LLLLHLL
+pPPI1 000101
+pPPO LLLHLH
+
+pattern_388
+pPI1 1001111001011010110
+pPO1 LLLLHLL
+pPPI1 000010
+pPPO LLLLHL
+
+pattern_389
+pPI1 1011110011101011000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_390
+pPI1 1011110001110101100
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_391
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000010
+pPPO HLLLHL
+
+pattern_392
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_393
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_394
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO HHLHHL
+
+pattern_395
+pPI1 1011110011010110000
+pPO1 LLLHHLL
+pPPI1 111001
+pPPO LLLHLH
+
+pattern_396
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_397
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_398
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000001
+pPPO LLLLLH
+
+pattern_399
+pPI1 1011110011101011000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO LHLHLL
+
+pattern_400
+pPI1 1011111000110101100
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HHLLLL
+
+pattern_401
+pPI1 1011110011101011000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_402
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 010010
+pPPO HHLLHL
+
+pattern_403
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_404
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO LHHLLH
+
+pattern_405
+pPI1 1011110011010111000
+pPO1 LLLLHLH
+pPPI1 011110
+pPPO HHHHHL
+
+pattern_406
+pPI1 1011110011010111000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_407
+pPI1 1011110011011011000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_408
+pPI1 1011110011011011000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HHLHLL
+
+pattern_409
+pPI1 1011110011101011000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_410
+pPI1 1011110010101001100
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO LLLHLL
+
+pattern_411
+pPI1 1011111001101011000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_412
+pPI1 1011111001101011000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_413
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101010
+pPPO LHLHLL
+
+pattern_414
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO HHLHHL
+
+pattern_415
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO HLLLLL
+
+pattern_416
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_417
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO LLHLHL
+
+pattern_418
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_419
+pPI1 1011110101110101100
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_420
+pPI1 1011111000110101100
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_421
+pPI1 1011110101101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO LHLLLL
+
+pattern_422
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_423
+pPI1 1011110011010110000
+pPO1 HLHHHHL
+pPPI1 111111
+pPPO LLLHHH
+
+pattern_424
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 010010
+pPPO HHLLHL
+
+pattern_425
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110101
+pPPO LLHHLH
+
+pattern_426
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_427
+pPI1 1011110011010111000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_428
+pPI1 1011110001101001100
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO LHLHHL
+
+pattern_429
+pPI1 1011110001101101100
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO HHLHHL
+
+pattern_430
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_431
+pPI1 1011110011101011000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_432
+pPI1 1011110011001011000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO LLHLHL
+
+pattern_433
+pPI1 1011110011101011000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO HLHLHL
+
+pattern_434
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_435
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO HLLLLL
+
+pattern_436
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO LHLHLH
+
+pattern_437
+pPI1 1011110011010110000
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_438
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO LHLHLH
+
+pattern_439
+pPI1 1011110011001011000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_440
+pPI1 1001110100111001011
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO LHLHHL
+
+pattern_441
+pPI1 1011110011101011000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_442
+pPI1 1011110011101011000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO HLLHHL
+
+pattern_443
+pPI1 1011110001010101100
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_444
+pPI1 1100111100110101100
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO LLHLLL
+
+pattern_445
+pPI1 1011111010110101100
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_446
+pPI1 1010111001101011000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_447
+pPI1 1010111001101011000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HHHLLL
+
+pattern_448
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_449
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_450
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_451
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_452
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_453
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_454
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100101
+pPPO LHLHLH
+
+pattern_455
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_456
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_457
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_458
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_459
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_460
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_461
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_462
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_463
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110101
+pPPO LLHHLH
+
+pattern_464
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100110
+pPPO LHLHHL
+
+pattern_465
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_466
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 010010
+pPPO HHLLHL
+
+pattern_467
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_468
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO HHLHHL
+
+pattern_469
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_470
+pPI1 1101111001110101110
+pPO1 LLLLHLL
+pPPI1 000010
+pPPO LLLLHL
+
+pattern_471
+pPI1 1011110011010110100
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO HLHHLL
+
+pattern_472
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_473
+pPI1 1011110011010110010
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_474
+pPI1 1011110001101011100
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_475
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_476
+pPI1 1011110001101011000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_477
+pPI1 1011110011010110100
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO HLHHLL
+
+pattern_478
+pPI1 1101111001101011000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LLLLLL
+
+pattern_479
+pPI1 1001111001110101100
+pPO1 LLLLHLL
+pPPI1 000010
+pPPO LLLLHL
+
+pattern_480
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_481
+pPI1 1001111001101011000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_482
+pPI1 1011110001101011100
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_483
+pPI1 0101111001101010100
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LLLLLL
+
+pattern_484
+pPI1 1011110001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_485
+pPI1 1011110011010111000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO HHHLLH
+
+pattern_486
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011110
+pPPO LHHHHL
+
+pattern_487
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101010
+pPPO LHLHLL
+
+pattern_488
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100110
+pPPO LHLHHL
+
+pattern_489
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_490
+pPI1 1011110011010110000
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_491
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_492
+pPI1 1101111001110101100
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_493
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_494
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_495
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_496
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_497
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110101
+pPPO LLHHLH
+
+pattern_498
+pPI1 1101111001110010110
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HLLHLL
+
+pattern_499
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_500
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_501
+pPI1 1101111001110010110
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO HHLHLH
+
+pattern_502
+pPI1 1011111001101011000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_503
+pPI1 1011111001101011000
+pPO1 HLLLHHH
+pPPI1 011101
+pPPO LHHLHL
+
+pattern_504
+pPI1 1011111001101011000
+pPO1 LLLHHLH
+pPPI1 100101
+pPPO LHLHLH
+
+pattern_505
+pPI1 1011111001101011000
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO HHLHLH
+
+pattern_506
+pPI1 1011111100110101100
+pPO1 LLLHHLH
+pPPI1 100001
+pPPO LHLLLH
+
+pattern_507
+pPI1 1001111100110101100
+pPO1 LLLLHLL
+pPPI1 010010
+pPPO LHLLHL
+
+pattern_508
+pPI1 1011111001101011000
+pPO1 LLLHHLH
+pPPI1 100101
+pPPO LHLHLH
+
+pattern_509
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_510
+pPI1 1011110011010110000
+pPO1 LLLLHHL
+pPPI1 001111
+pPPO HLHLHH
+
+pattern_511
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_512
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010011
+pPPO HHLLHH
+
+pattern_513
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 001110
+pPPO HLHHHL
+
+pattern_514
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_515
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 110010
+pPPO LLHLLL
+
+pattern_516
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_517
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_518
+pPI1 1011110011010101100
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HLLHLL
+
+pattern_519
+pPI1 1101111001101101100
+pPO1 LLLLHLL
+pPPI1 000010
+pPPO LLLLHL
+
+pattern_520
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_521
+pPI1 1011110011011011000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HHLHLL
+
+pattern_522
+pPI1 1011011100110101100
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO LLLLLL
+
+pattern_523
+pPI1 1010111100110101100
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO LLHLLL
+
+pattern_524
+pPI1 1011111100110101100
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_525
+pPI1 1011110001101011000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_526
+pPI1 1011111100110101100
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO HLLLLL
+
+pattern_527
+pPI1 1011111001101011000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_528
+pPI1 1011101001101011000
+pPO1 LLLHHLH
+pPPI1 101100
+pPPO LHHHHL
+
+pattern_529
+pPI1 1011101001101011000
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_530
+pPI1 1011110001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_531
+pPI1 1011101001101011000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO HLHLLH
+
+pattern_532
+pPI1 1101111100110101100
+pPO1 LLLLLLL
+pPPI1 011010
+pPPO HHHLHL
+
+pattern_533
+pPI1 1010111001101011000
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO LLHLLL
+
+pattern_534
+pPI1 1101111001101011000
+pPO1 LLLLLLL
+pPPI1 011010
+pPPO HHHLHL
+
+pattern_535
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_536
+pPI1 1101111001101011000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LLLLLL
+
+pattern_537
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_538
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110001
+pPPO LHHHLL
+
+pattern_539
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000010
+pPPO HLLLHL
+
+pattern_540
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO LHLHLH
+
+pattern_541
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110101
+pPPO LLHHLH
+
+pattern_542
+pPI1 1011110011010110000
+pPO1 HLLLHHH
+pPPI1 011101
+pPPO LHHLHL
+
+pattern_543
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO LHLHLH
+
+pattern_544
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_545
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_546
+pPI1 1011110001101011000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_547
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_548
+pPI1 1011110001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_549
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_550
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HLLHLL
+
+pattern_551
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_552
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_553
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_554
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_555
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO HHLHHL
+
+pattern_556
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_557
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_558
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_559
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_560
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_561
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_562
+pPI1 1011110011010110000
+pPO1 LLLLHHL
+pPPI1 001111
+pPPO HLHLHH
+
+pattern_563
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO LHLHLH
+
+pattern_564
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_565
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_566
+pPI1 1001111001101011000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_567
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_568
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_569
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO LLHHLH
+
+pattern_570
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_571
+pPI1 1011110011010110000
+pPO1 HLLHHHH
+pPPI1 111101
+pPPO LHHHHH
+
+pattern_572
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO LLHLHL
+
+pattern_573
+pPI1 1011110011010110000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO LHLLLL
+
+pattern_574
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000101
+pPPO LLLHLH
+
+pattern_575
+pPI1 1011110001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_576
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_577
+pPI1 1011110011011011000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HHLHLL
+
+pattern_578
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_579
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_580
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_581
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_582
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 110010
+pPPO LLHLLL
+
+pattern_583
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_584
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_585
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_586
+pPI1 1011110011010110000
+pPO1 LLLHHLL
+pPPI1 101000
+pPPO LLLLHL
+
+pattern_587
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_588
+pPI1 1011111001101011000
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO HHLHLH
+
+pattern_589
+pPI1 1011111001101011000
+pPO1 LLLHHLH
+pPPI1 100101
+pPPO LHLHLH
+
+pattern_590
+pPI1 1011111001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO HHLLLH
+
+pattern_591
+pPI1 1011110001110101100
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_592
+pPI1 1011110010101001100
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO LLLHLL
+
+pattern_593
+pPI1 1011110011101011000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_594
+pPI1 1011110001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_595
+pPI1 1001111001101011001
+pPO1 LLLLHLL
+pPPI1 001110
+pPPO LLHHHL
+
+pattern_596
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO LLHHLH
+
+pattern_597
+pPI1 1011110001010101101
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_598
+pPI1 1011110011010110001
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO HLHHLH
+
+pattern_599
+pPI1 1011110001010101100
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_600
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_601
+pPI1 1101111001101011000
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO HLLLLL
+
+pattern_602
+pPI1 1011110011010110000
+pPO1 LLLHLLH
+pPPI1 101011
+pPPO LHHHLH
+
+pattern_603
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_604
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_605
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_606
+pPI1 1101111001101011000
+pPO1 LLLLLLL
+pPPI1 011010
+pPPO HHHLHL
+
+pattern_607
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_608
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_609
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110011
+pPPO LHHHLL
+
+pattern_610
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_611
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010011
+pPPO HHLLHH
+
+pattern_612
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_613
+pPI1 1011110011010110000
+pPO1 HLLLHHH
+pPPI1 011101
+pPPO LHHLHL
+
+pattern_614
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_615
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO LHLHLH
+
+pattern_616
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_617
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110001
+pPPO LHHHLL
+
+pattern_618
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_619
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_620
+pPI1 1011110011011011000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_621
+pPI1 1011110011001011000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO LHLHLL
+
+pattern_622
+pPI1 1011110001101011000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_623
+pPI1 1011110011011011000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HHLHLL
+
+pattern_624
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO LLHHLH
+
+pattern_625
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101010
+pPPO LHLHLL
+
+pattern_626
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO LLHHLH
+
+pattern_627
+pPI1 1011110011010110000
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_628
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111011
+pPPO LHHHLH
+
+pattern_629
+pPI1 1011110011101011000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_630
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_631
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 010010
+pPPO HHLLHL
+
+pattern_632
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101100
+pPPO LHHHHL
+
+pattern_633
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 010010
+pPPO HHLLHL
+
+pattern_634
+pPI1 1011110011010110000
+pPO1 LLLHHLL
+pPPI1 101000
+pPPO LLLLHL
+
+pattern_635
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_636
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_637
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_638
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_639
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_640
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_641
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_642
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_643
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_644
+pPI1 1011111001101011000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_645
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_646
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_647
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_648
+pPI1 1011110011010111000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_649
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011110
+pPPO LHHHHL
+
+pattern_650
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_651
+pPI1 1011110011010111000
+pPO1 LLLLHLH
+pPPI1 011110
+pPPO HHHHHL
+
+pattern_652
+pPI1 1001111001101011000
+pPO1 LLLLHLL
+pPPI1 001110
+pPPO LLHHHL
+
+pattern_653
+pPI1 1011110100110101100
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_654
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_655
+pPI1 1011111001101011000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_656
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_657
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_658
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_659
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100110
+pPPO LHLHHL
+
+pattern_660
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_661
+pPI1 1011110011010110000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO LLHLLH
+
+pattern_662
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_663
+pPI1 1101111001110101100
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_664
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_665
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_666
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_667
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO HHLHHL
+
+pattern_668
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_669
+pPI1 1011110011010110000
+pPO1 LLLLHHL
+pPPI1 001111
+pPPO HLHLHH
+
+pattern_670
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010011
+pPPO HHLLHH
+
+pattern_671
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO LHLHLH
+
+pattern_672
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110101
+pPPO LLHHLH
+
+pattern_673
+pPI1 1011110011010110000
+pPO1 HLLLHHH
+pPPI1 101101
+pPPO LHHHLH
+
+pattern_674
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110101
+pPPO LLHHLH
+
+pattern_675
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_676
+pPI1 1001111001101011000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_677
+pPI1 1101111001110010110
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO HHLHLH
+
+pattern_678
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100001
+pPPO LHLLLH
+
+pattern_679
+pPI1 1001111001110010110
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO HHLHLH
+
+pattern_680
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_681
+pPI1 1011110011101011000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO HLHLHL
+
+pattern_682
+pPI1 1011110001101101100
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO HHLHHL
+
+pattern_683
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_684
+pPI1 1001110100111010110
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO HLHLHL
+
+pattern_685
+pPI1 1011110011010110000
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_686
+pPI1 1011110011010110000
+pPO1 LLLHHLL
+pPPI1 101000
+pPPO LLLLHL
+
+pattern_687
+pPI1 1011110011010110000
+pPO1 LLLHLLH
+pPPI1 101011
+pPPO LHHHLH
+
+pattern_688
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO LHLHLH
+
+pattern_689
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_690
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_691
+pPI1 1011110011010110000
+pPO1 HLLHHHH
+pPPI1 111101
+pPPO LHHHHH
+
+pattern_692
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_693
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_694
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100001
+pPPO LHLLLH
+
+pattern_695
+pPI1 1011110011010110000
+pPO1 LLLLHHL
+pPPI1 001111
+pPPO HLHLHH
+
+pattern_696
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_697
+pPI1 1011110011010110000
+pPO1 LLLLHHL
+pPPI1 001111
+pPPO HLHLHH
+
+pattern_698
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010011
+pPPO HHLLHH
+
+pattern_699
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_700
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO LLHLHL
+
+pattern_701
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_702
+pPI1 1011110011011011000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HHLHLL
+
+pattern_703
+pPI1 1011110011010110100
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO HLHHLL
+
+pattern_704
+pPI1 1011111100110101100
+pPO1 LLLLHLH
+pPPI1 001000
+pPPO HLLLLL
+
+pattern_705
+pPI1 1011110011011011000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HHLHLL
+
+pattern_706
+pPI1 1011110001101011000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_707
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_708
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_709
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_710
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_711
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_712
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO LLHLHL
+
+pattern_713
+pPI1 1001110100111010110
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO HLHLHL
+
+pattern_714
+pPI1 1011110100011010110
+pPO1 LLLLHLL
+pPPI1 000010
+pPPO HLLLHL
+
+pattern_715
+pPI1 1011110011010111000
+pPO1 LLLLHLH
+pPPI1 011110
+pPPO HHHHHL
+
+pattern_716
+pPI1 1011111001101011000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_717
+pPI1 1011110001110101100
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO HLHLHL
+
+pattern_718
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_719
+pPI1 1011110011010110000
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_720
+pPI1 1011110011010110000
+pPO1 HLLLHHH
+pPPI1 011101
+pPPO LHHLHL
+
+pattern_721
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 010010
+pPPO HHLLHL
+
+pattern_722
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO LLHHLH
+
+pattern_723
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 010010
+pPPO HHLLHL
+
+pattern_724
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_725
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_726
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_727
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_728
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 100100
+pPPO LLHLHL
+
+pattern_729
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_730
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_731
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_732
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_733
+pPI1 1011110011010110000
+pPO1 LLLLHHL
+pPPI1 001111
+pPPO HLHLHH
+
+pattern_734
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 011000
+pPPO LHHLLL
+
+pattern_735
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_736
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_737
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO LHHLLH
+
+pattern_738
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_739
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 110010
+pPPO LLHLLL
+
+pattern_740
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO LHHLLH
+
+pattern_741
+pPI1 1011110011010110000
+pPO1 HLLHHHH
+pPPI1 111101
+pPPO LHHHHH
+
+pattern_742
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_743
+pPI1 1011110011010110000
+pPO1 LLLHHLL
+pPPI1 101000
+pPPO LLLLHL
+
+pattern_744
+pPI1 1011110011010110000
+pPO1 HLLHHHH
+pPPI1 111101
+pPPO LHHHHH
+
+pattern_745
+pPI1 1011110001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_746
+pPI1 1011111001101011000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_747
+pPI1 1011111001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO HHLLLH
+
+pattern_748
+pPI1 1011110001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_749
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011110
+pPPO LHHHHL
+
+pattern_750
+pPI1 1011110011010110000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO LHLLLL
+
+pattern_751
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000101
+pPPO LLLHLH
+
+pattern_752
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011110
+pPPO LHHHHL
+
+pattern_753
+pPI1 1011110011010110001
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO HLHHLH
+
+pattern_754
+pPI1 1011110011101011000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO HLLHHL
+
+pattern_755
+pPI1 1011110001010101100
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_756
+pPI1 1011110011010110001
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO HLHHLH
+
+pattern_757
+pPI1 1010111001101011000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HHHLLL
+
+pattern_758
+pPI1 1011110011010110000
+pPO1 LLLHLLH
+pPPI1 101011
+pPPO LHHHLH
+
+pattern_759
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_760
+pPI1 1010111001101011000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_761
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110101
+pPPO LLHHLH
+
+pattern_762
+pPI1 1101111001101011000
+pPO1 LLLLLLL
+pPPI1 011010
+pPPO HHHLHL
+
+pattern_763
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_764
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_765
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_766
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101110
+pPPO HHHLLL
+
+pattern_767
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 111000
+pPPO HLHLLL
+
+pattern_768
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110101
+pPPO LLHHLH
+
+pattern_769
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_770
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100110
+pPPO LHLHHL
+
+pattern_771
+pPI1 1001111001110010110
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO HHLHLH
+
+pattern_772
+pPI1 1011110011011011000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HHLHLL
+
+pattern_773
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100110
+pPPO LHLHHL
+
+pattern_774
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_775
+pPI1 1001111001101011100
+pPO1 HLLLHHH
+pPPI1 011101
+pPPO LHHLHL
+
+pattern_776
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO LHHLLH
+
+pattern_777
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 110010
+pPPO LLHLLL
+
+pattern_778
+pPI1 1011110011010110001
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO HLHHLH
+
+pattern_779
+pPI1 1011110001010101100
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_780
+pPI1 1011110001110101100
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO LHLHLH
+
+pattern_781
+pPI1 1011110001101011000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_782
+pPI1 1011110011011011000
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HHLHLL
+
+pattern_783
+pPI1 1011110001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_784
+pPI1 1011110001101101100
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO LHLHLH
+
+pattern_785
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_786
+pPI1 1011110001110101100
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO HLHLHL
+
+pattern_787
+pPI1 1011110001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_788
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_789
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000101
+pPPO LLLHLH
+
+pattern_790
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_791
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011110
+pPPO LHHHHL
+
+pattern_792
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_793
+pPI1 1011110011010110000
+pPO1 HLLHHHH
+pPPI1 111101
+pPPO LHHHHH
+
+pattern_794
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_795
+pPI1 1011110011010110000
+pPO1 LLLHHLL
+pPPI1 101000
+pPPO LLLLHL
+
+pattern_796
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO LLHHLH
+
+pattern_797
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 001110
+pPPO HLHHHL
+
+pattern_798
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000111
+pPPO LLLHHH
+
+pattern_799
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_800
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101100
+pPPO LHHHHL
+
+pattern_801
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 010010
+pPPO HHLLHL
+
+pattern_802
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_803
+pPI1 1010111001101011000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_804
+pPI1 1101111001110101100
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_805
+pPI1 1101111001110101100
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_806
+pPI1 1101111001110101100
+pPO1 LLLHHLH
+pPPI1 110010
+pPPO LLHLLL
+
+pattern_807
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_808
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_809
+pPI1 1011111001101011000
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_810
+pPI1 1011110011010110000
+pPO1 LLLHHHH
+pPPI1 110110
+pPPO LLHHLL
+
+pattern_811
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_812
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_813
+pPI1 1011110011010110000
+pPO1 HLLLHHH
+pPPI1 011101
+pPPO LHHLHL
+
+pattern_814
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 110010
+pPPO LLHLLL
+
+pattern_815
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO LHHLLH
+
+pattern_816
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_817
+pPI1 1011110011010110001
+pPO1 HLLLHHH
+pPPI1 101101
+pPPO LHHHLH
+
+pattern_818
+pPI1 1011110001010101100
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_819
+pPI1 1011110011010110001
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO HLHHLH
+
+pattern_820
+pPI1 1011110100110101100
+pPO1 LLLHHLH
+pPPI1 100001
+pPPO LHLLLH
+
+pattern_821
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011110
+pPPO LHHHHL
+
+pattern_822
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_823
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100110
+pPPO LHLHHL
+
+pattern_824
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO HHLHHL
+
+pattern_825
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_826
+pPI1 1011111001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO HHLLLH
+
+pattern_827
+pPI1 1011110001110101100
+pPO1 LLLLHLH
+pPPI1 010100
+pPPO HLLHLL
+
+pattern_828
+pPI1 1011110001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_829
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_830
+pPI1 1101111001110101100
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_831
+pPI1 1011110101101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO LHLLLL
+
+pattern_832
+pPI1 1101111001110101100
+pPO1 LLLHHLH
+pPPI1 110010
+pPPO LLHLLL
+
+pattern_833
+pPI1 1101111001110101100
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_834
+pPI1 1011110011010110010
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_835
+pPI1 1001111001101011100
+pPO1 HLLLHHH
+pPPI1 011101
+pPPO LHHLHL
+
+pattern_836
+pPI1 1101111001110101100
+pPO1 LLLHLLH
+pPPI1 001001
+pPPO LHLLLL
+
+pattern_837
+pPI1 1011110011010110010
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_838
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_839
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_840
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO LHHLLH
+
+pattern_841
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_842
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_843
+pPI1 1011110011101011000
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_844
+pPI1 1011110011010110001
+pPO1 LLLLHHH
+pPPI1 001101
+pPPO HLHHLH
+
+pattern_845
+pPI1 1011110100110101100
+pPO1 LLLHHLH
+pPPI1 100001
+pPPO LHLLLH
+
+pattern_846
+pPI1 1011110001110101100
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_847
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010101
+pPPO LHLHLH
+
+pattern_848
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 111100
+pPPO LHHLLH
+
+pattern_849
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000101
+pPPO LLLHLH
+
+pattern_850
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_851
+pPI1 1011110011010111000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO HHHLLH
+
+pattern_852
+pPI1 1011110001110101100
+pPO1 LLLLHLH
+pPPI1 000100
+pPPO HLLHLL
+
+pattern_853
+pPI1 1011111001101011000
+pPO1 LLLLLLH
+pPPI1 010000
+pPPO HLLLLL
+
+pattern_854
+pPI1 1011110011010111000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO HHHLLH
+
+pattern_855
+pPI1 1011110100110101100
+pPO1 LLLHHLH
+pPPI1 100001
+pPPO LHLLLH
+
+pattern_856
+pPI1 1011110011010111000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO HHHLLH
+
+pattern_857
+pPI1 1011110001110101100
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO HLHLHL
+
+pattern_858
+pPI1 1011110100110101100
+pPO1 LLLHHLH
+pPPI1 100001
+pPPO LHLLLH
+
+pattern_859
+pPI1 1011110011010111000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO HHHLLH
+
+pattern_860
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_861
+pPI1 1011101001101011000
+pPO1 LLLLLLL
+pPPI1 101001
+pPPO HLHLLH
+
+pattern_862
+pPI1 1011110011010111000
+pPO1 LLLLHLH
+pPPI1 011001
+pPPO HHHLLH
+
+pattern_863
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_864
+pPI1 1011110001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+
+pattern_865
+pPI1 1011110011010110000
+pPO1 HLLHHHH
+pPPI1 111101
+pPPO LHHHHH
+
+pattern_866
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO LLHLHL
+
+pattern_867
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 110100
+pPPO LLLHHL
+
+pattern_868
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100110
+pPPO LHLHHL
+
+pattern_869
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_870
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO HHLHHL
+
+pattern_871
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 000000
+pPPO LHLLHL
+
+pattern_872
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 001010
+pPPO LLHLHL
+
+pattern_873
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_874
+pPI1 1011110011010110000
+pPO1 LLLHLLL
+pPPI1 001011
+pPPO LHHLHL
+
+pattern_875
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_876
+pPI1 1011110011010110000
+pPO1 LLLHHLL
+pPPI1 101000
+pPPO LLLLHL
+
+pattern_877
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010110
+pPPO HHLHHL
+
+pattern_878
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 111110
+pPPO LLLLLH
+
+pattern_879
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000101
+pPPO LLLHLH
+
+pattern_880
+pPI1 1011110011010110000
+pPO1 LLLLHHH
+pPPI1 001100
+pPPO HLHHLL
+
+pattern_881
+pPI1 1011110011010110000
+pPO1 LLHHHLL
+pPPI1 110000
+pPPO LLHHHL
+
+pattern_882
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 100010
+pPPO LLLHLL
+
+pattern_883
+pPI1 1011110011010110000
+pPO1 LLLHHLH
+pPPI1 101100
+pPPO LHHHHL
+
+pattern_884
+pPI1 1011110011010110000
+pPO1 LLLLHLH
+pPPI1 010011
+pPPO HHLLHH
+
+pattern_885
+pPI1 1011110011010110000
+pPO1 LHLHHLL
+pPPI1 111010
+pPPO LHHLLL
+
+pattern_886
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_887
+pPI1 1011110011010110010
+pPO1 LLLLHHH
+pPPI1 011100
+pPPO LHHHLL
+
+pattern_888
+pPI1 1011110011010110000
+pPO1 LLLLHLL
+pPPI1 000110
+pPPO LLLHHL
+
+pattern_889
+pPI1 1011110011010110000
+pPO1 LLHHLLL
+pPPI1 100000
+pPPO HLHLLH
+
+pattern_890
+pPI1 1011110001101011000
+pPO1 LLLLHLH
+pPPI1 010001
+pPPO LHLLLH
+==========
+/atpg_s510.script 15> exit
+#  Goodbye
+#  Runtime        real 0.6417 s        user 0.6812 s        sys 0.08407 s
+#  Memory         peak 7515 MB

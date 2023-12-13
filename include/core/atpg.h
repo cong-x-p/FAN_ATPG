@@ -67,6 +67,7 @@ class Atpg {
         setupCircuitParameter();
     }
     void parallelStuckAtFaultATPG(FaultPtrList* faultPtrListForGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults);
+    void parallelBalanceStuckAtFaultATPG(FaultPtrList* faultPtrListForGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults);
 
    private:
     Circuit* pCircuit_;                                        // the circuit built on read verilog

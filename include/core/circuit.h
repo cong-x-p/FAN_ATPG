@@ -25,7 +25,7 @@ class Circuit {
 
     // cxp: copy constructor
     Circuit(const Circuit& other) {
-        pNetlist_ = other.pNetlist_;
+        pNetlist_ = NULL;
         numPI_ = other.numPI_;
         numPPI_ = other.numPPI_;
         numPO_ = other.numPO_;
