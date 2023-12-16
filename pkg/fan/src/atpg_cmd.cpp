@@ -1148,13 +1148,13 @@ bool RunAtpgCmd::exec(const std::vector<std::string>& argv) {
 
     std::vector<Fault*> faults;
     faults.assign(originalFaultPtrList.begin(), originalFaultPtrList.end());
-    std::cout << "faults size: " << faults.size() << std::endl;
+    // std::cout << "faults size: " << faults.size() << std::endl;
 
     std::vector<FaultPtrList> faultPtrListVec;
     // faultPtrListVec.reserve(originalFaultPtrList.size());
 
     // test
-    int maxParallelFaults = 20000;
+    int maxParallelFaults = 15000;
     std::vector<std::vector<Fault*>> parallelFaultsVectors;
     if (originalFaultPtrList.size() >= maxParallelFaults) {
         int numOfParallelFaultsVecs = originalFaultPtrList.size() / maxParallelFaults;
@@ -1169,7 +1169,7 @@ bool RunAtpgCmd::exec(const std::vector<std::string>& argv) {
         }
     }
 
-    std::cout << "parallelFaultsVectors: " << parallelFaultsVectors.size() << std::endl;
+    // std::cout << "parallelFaultsVectors: " << parallelFaultsVectors.size() << std::endl;
 
     faultPtrListVec.reserve(parallelFaultsVectors.size());
     // std::vector<Atpg*> parallelAtpgs;
@@ -1246,7 +1246,6 @@ bool RunAtpgCmd::exec(const std::vector<std::string>& argv) {
         numOfAtpgUntestableFaults = 0;
 
         threads.push_back(std::thread(&CoreNs::Atpg::parallelBalanceStuckAtFaultATPG, parallelAtpg, &(faultPtrListVec[i]), parallelPatternProcessor, std::ref(numOfAtpgUntestableFaults)));
-        std::cout << "thread " << i << " start" << std::endl;
     }
 
     // for (Fault* fault : faults) {
@@ -1290,9 +1289,8 @@ bool RunAtpgCmd::exec(const std::vector<std::string>& argv) {
     //     threads.push_back(std::thread(&CoreNs::Atpg::parallelStuckAtFaultATPG, parallelAtpg, &(faultPtrListVec.back()), parallelPatternProcessor, std::ref(numOfAtpgUntestableFaults)));
     // }
 
-    for (auto& i : threads) {
-        i.join();
-        std::cout << "end" << std::endl;
+    for (auto iter = threads.begin(); iter != threads.end(); iter++) {
+        iter->join();
     }
 
     // std::cout << parallelPatternProcessors.size() << std::endl;
@@ -1302,6 +1300,10 @@ bool RunAtpgCmd::exec(const std::vector<std::string>& argv) {
                 fanMgr_->pcoll->patternVector_.push_back(parallelPatternProcessors[i]->patternVector_[j]);
             }
         }
+    }
+
+    if (fanMgr_->pcoll->staticCompression_ == PatternProcessor::ON) {
+        fanMgr_->atpg->staticTestCompressionByReverseFaultSimulation(fanMgr_->pcoll, faultPtrListForSTC);
     }
 
     // fanMgr_->atpg->generatePatternSet(fanMgr_->pcoll, fanMgr_->fListExtract, true);

@@ -1,0 +1,15 @@
+read_lib /home/congxiping/FAN_ATPG/techlib/mod_nangate45.mdt
+read_netlist /home/congxiping/FAN_ATPG/mod_netlist/s208.v
+report_netlist
+build_circuit --frame 1
+report_circuit
+set_fault_type saf
+add_fault --all
+set_static_compression off
+set_dynamic_compression off
+set_X-Fill on
+run_atpg
+report_statistics > /home/congxiping/FAN_ATPG/rpt/FAN_s208_debug.rpt
+write_pattern /home/congxiping/FAN_ATPG/pat/FAN_s208_debug.pat
+write_to_STIL /home/congxiping/FAN_ATPG/pat/FAN_s208_debug.stil
+exit

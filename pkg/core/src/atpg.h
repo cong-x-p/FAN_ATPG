@@ -17,6 +17,9 @@
 #include "decision_tree.h"
 #include "simulator.h"
 
+#include <mutex>
+extern std::mutex mtx;
+
 namespace CoreNs {
 constexpr int BACKTRACK_LIMIT = 500;
 constexpr int INFINITE = 0x7fffffff;
@@ -68,6 +71,7 @@ class Atpg {
     }
     void parallelStuckAtFaultATPG(FaultPtrList* faultPtrListForGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults);
     void parallelBalanceStuckAtFaultATPG(FaultPtrList* faultPtrListForGen, PatternProcessor* pPatternProcessor, int& numOfAtpgUntestableFaults);
+    void staticTestCompressionByReverseFaultSimulation(PatternProcessor* pPatternProcessor, FaultPtrList& originalFaultList);
 
    private:
     Circuit* pCircuit_;                                        // the circuit built on read verilog
@@ -158,7 +162,7 @@ class Atpg {
     IMPLICATION_STATUS evaluateAndSetFaultyGateAtpgVal(Gate* pGate);
 
     // static test compression
-    void staticTestCompressionByReverseFaultSimulation(PatternProcessor* pPatternProcessor, FaultPtrList& originalFaultList);
+    // void staticTestCompressionByReverseFaultSimulation(PatternProcessor* pPatternProcessor, FaultPtrList& originalFaultList);
 
     int setUpFirstTimeFrame(Fault& fault);  // this function is for multiple time frame
 
@@ -250,11 +254,12 @@ inline Atpg::Atpg(Circuit* pCircuit, Simulator* pSimulator)
 // Date       [ WYH Ver. 1.0 started 2013/08/15 last modified 2023/01/06]
 // **************************************************************************
 inline Value Atpg::evaluateGoodVal(Gate& gate) {
+    // std::lock_guard<std::mutex> guard(mtx);
     if (gate.gateType_ == Gate::PI || gate.gateType_ == Gate::PPI) {
         return gate.atpgVal_;
     }
 
-    static Value v[4];
+    Value v[4];
     int index = 0;
     for (const int& faninID : gate.faninVector_) {
         v[index++] = pCircuit_->circuitGates_[faninID].atpgVal_;
