@@ -1,0 +1,15 @@
+read_lib /home/congxiping/FAN_ATPG/techlib/mod_nangate45.mdt
+read_netlist -v /home/congxiping/temp.v
+report_netlist
+build_circuit --frame 1
+report_circuit
+set_fault_type saf
+add_fault --all
+set_static_compression off
+set_dynamic_compression off
+set_X-Fill on
+run_atpg
+report_statistics > rpt/temp.rpt
+write_pattern pat/temp.pat
+write_to_STIL pat/temp.stil
+exit
